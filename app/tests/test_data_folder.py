@@ -97,7 +97,7 @@ class Lookup(unittest.TestCase):
             self.skipTest('running as a user who can write anywhere')
         found = library(main.default_parent() / 'LastbookData')
         self.assertEqual(main.data_folder(None), found)
-        self.assertIn('cannot save', main.check(locked)[1])
+        self.assertIn('kan ikke gemme', main.check(locked)[1])
 
     def test_check_takes_the_folder_or_its_parent(self):
         data = library(self.tmp / 'Lastbook-Small' / 'LastbookData')
@@ -105,7 +105,7 @@ class Lookup(unittest.TestCase):
         self.assertEqual(main.check(data.parent), (data, None))
         found, why = main.check(self.tmp)
         self.assertIsNone(found)
-        self.assertIn('is not an ARK library', why)
+        self.assertIn('er ikke et ARK-bibliotek', why)
         self.assertNotIn(str(self.tmp.parent), why)   # the folder's name, not its whole path
 
     def test_remembered_gone_searches_again(self):
@@ -132,7 +132,7 @@ class Lookup(unittest.TestCase):
         with mock.patch.object(main, 'choose_folder', lambda m: asked.append(m) or next(answers)):
             self.assertEqual(main.ask_for_library(), good)
         self.assertEqual(asked[0], main.ASK)
-        self.assertIn('is not an ARK library', asked[1])
+        self.assertIn('er ikke et ARK-bibliotek', asked[1])
         self.assertEqual(main.data_folder(None), good)   # remembered
 
     def test_cancel_drops_old_reason(self):
@@ -142,7 +142,7 @@ class Lookup(unittest.TestCase):
         answers = iter([str(self.tmp / 'empty'), '', str(good)])   # wrong folder, then the picker is cancelled
         with mock.patch.object(main, 'choose_folder', lambda m: asked.append(m) or next(answers)):
             self.assertEqual(main.ask_for_library(), good)
-        self.assertIn('is not an ARK library', asked[1])
+        self.assertIn('er ikke et ARK-bibliotek', asked[1])
         self.assertEqual(asked[2], main.ASK)
 
     def test_quit(self):
@@ -204,7 +204,7 @@ class Lookup(unittest.TestCase):
         with mock.patch.object(sys, 'platform', 'win32'), \
                 mock.patch.dict(sys.modules, {'shell_windows': SimpleNamespace(pick_folder=picker)}):
             self.assertEqual(main.pick_folder(files=True), str(self.tmp / 'model.gguf'))
-            picker.assert_called_once_with('Choose a library zip or model file', main.app_folders()[1], files=True)
+            picker.assert_called_once_with('Vælg en biblioteks-zip eller modelfil', main.app_folders()[1], files=True)
 
     def test_model_discovery_stays_inside_selected_library(self):
         import llm_local

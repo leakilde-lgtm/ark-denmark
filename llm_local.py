@@ -151,7 +151,7 @@ class Local:
                 self.state, self.message = 'off', ''
                 return
             if not self.runner:
-                self.state, self.message = 'error', 'This copy of Lastbook has no local AI runtime.'
+                self.state, self.message = 'error', 'Denne udgave af ARK har ingen lokal AI-motor.'
                 return
             self.state, self.pct, self.message = 'absent', None, ''
         found, wrong = None, None
@@ -173,8 +173,8 @@ class Local:
                     p, size = wrong
                     done = size < SIZE
                     self.state = 'wrong'
-                    self.message = (f'The file in {_folder_name(p)} is {_gb(size)} of {_gb(SIZE)}. ' +
-                                    ('The download may not have finished.' if done else 'It is not the file Lastbook expects.'))
+                    self.message = (f'Filen i {_folder_name(p)} er {_gb(size)} af {_gb(SIZE)}. ' +
+                                    ('Hentningen er måske ikke færdig.' if done else 'Det er ikke den fil, ARK forventer.'))
                 else:
                     self.state = 'absent'
             return
@@ -201,12 +201,12 @@ class Local:
                     self.pct = int(done * 100 / SIZE)
         except OSError as e:
             with self.lock:
-                self.state, self.pct, self.message = 'wrong', None, f'Lastbook could not read the model file ({type(e).__name__}).'
+                self.state, self.pct, self.message = 'wrong', None, f'ARK kunne ikke læse modelfilen ({type(e).__name__}).'
             return False
         if h.hexdigest() != SHA256:
             with self.lock:
                 self.state, self.pct = 'wrong', None
-                self.message = f'The file in {_folder_name(p)} has the right size but different contents. Download it again.'
+                self.message = f'Filen i {_folder_name(p)} har den rigtige størrelse, men et andet indhold. Hent den igen.'
             return False
         return True
 
@@ -222,7 +222,7 @@ class Local:
             print('local AI: measuring failed:', type(e).__name__, e, flush=True)
         with self.lock:
             if not fit:
-                self.state, self.message = 'error', 'The local AI program could not read the model file.'
+                self.state, self.message = 'error', 'Programmet til den lokale AI kunne ikke læse modelfilen.'
                 if out is not None:
                     print('local AI: measure output:', out.stdout[-2000:], out.stderr[-3000:], flush=True)
                 return
@@ -245,7 +245,7 @@ class Local:
                 self.last_used = time.time()
                 return None
             if self.state not in ('stopped', 'loading', 'error') or not self.path or not (self.fit or {}).get('fits'):
-                return self.message or 'The local AI is not set up on this computer.'
+                return self.message or 'Den lokale AI er ikke sat op på denne computer.'
             if self.state != 'loading':
                 self._spawn()
         t0 = time.time()
@@ -255,14 +255,14 @@ class Local:
                     self.last_used = time.time()
                     return None
                 if self.state != 'loading':
-                    return self.message or 'The local AI did not start.'
+                    return self.message or 'Den lokale AI startede ikke.'
             if cancelled():
                 return 'stopped'
             if on_wait:
                 on_wait(self.pct)
             time.sleep(0.25)
         self.stop('took too long to start')
-        return 'The local AI took too long to start.'
+        return 'Den lokale AI var for længe om at starte.'
 
     def _spawn(self):
         import queue
@@ -321,7 +321,7 @@ class Local:
                         self.state, self.message = 'stopped', ''
                     else:                      # twice in a row: it would fail the same way again
                         self.state = 'error'
-                        self.message = self.message or 'The local AI could not start. Look again after closing other programs.'
+                        self.message = self.message or 'Den lokale AI kunne ikke starte. Luk andre programmer, og se igen.'
 
     def stop(self, why=''):
         with self.lock:
@@ -366,7 +366,7 @@ class Local:
             with self.lock:
                 proc, events = self.proc, self.events
                 if not proc or self.state != 'ready':
-                    raise RuntimeError(self.message or 'The local AI is not running.')
+                    raise RuntimeError(self.message or 'Den lokale AI kører ikke.')
                 self.next_id += 1
                 rid = self.next_id
                 self.last_used = time.time()
@@ -377,7 +377,7 @@ class Local:
             try:
                 proc.stdin.write((json.dumps(req, ensure_ascii=False) + '\n').encode('utf-8'))
             except OSError:
-                raise RuntimeError('The local AI stopped unexpectedly. Ask again to restart it.')
+                raise RuntimeError('Den lokale AI stoppede uventet. Spørg igen for at starte den.')
             sent_cancel = False
             import queue
             while True:
@@ -393,7 +393,7 @@ class Local:
                     continue
                 kind = ev.get('ev')
                 if kind == 'exit':
-                    raise RuntimeError('The local AI stopped unexpectedly. Ask again to restart it.')
+                    raise RuntimeError('Den lokale AI stoppede uventet. Spørg igen for at starte den.')
                 if ev.get('id') != rid:
                     continue
                 if kind == 'tok':
@@ -427,11 +427,11 @@ def judge(fit):
            'model_bytes': dev + host, 'placement': placement, 'host_overrides': fit.get('host_overrides'), 'n_gpu_layers': fit.get('n_gpu_layers')}
     if fit.get('status') != 'fits':
         out['fits'] = False
-        out['why'] = 'The model does not fit this computer’s graphics memory together with its own memory.'
+        out['why'] = 'Modellen passer ikke i computerens grafikhukommelse sammen med dens egen hukommelse.'
     elif total and needs > total:
         out['fits'] = False
-        out['why'] = (f'The model needs about {_gb(in_ram)} of this computer’s memory, plus room for everything else, '
-                      f'and this computer has {_gb(total)}.')
+        out['why'] = (f'Modellen skal bruge ca. {_gb(in_ram)} af computerens hukommelse, plus plads til alt andet, '
+                      f'og computeren har {_gb(total)}.')
     else:
         out['fits'] = True
     return out
@@ -703,10 +703,10 @@ def _folder_name(p):
 
 def _plain_error(ev):
     code = ev.get('code')
-    return {'too_long': 'The question and its sources were too long for the local AI. Start a new chat or ask a shorter question.',
-            'load': 'The local AI could not load the model file.',
-            'context': 'There was not enough free memory to start the local AI. Close other programs and ask again.',
-            'model_file': 'The local AI could not read the model file.'}.get(code, ev.get('msg') or 'The local AI failed.')
+    return {'too_long': 'Spørgsmålet og kilderne var for lange til den lokale AI. Start en ny samtale, eller stil et kortere spørgsmål.',
+            'load': 'Den lokale AI kunne ikke indlæse modelfilen.',
+            'context': 'Der var ikke ledig hukommelse nok til at starte den lokale AI. Luk andre programmer, og spørg igen.',
+            'model_file': 'Den lokale AI kunne ikke læse modelfilen.'}.get(code, ev.get('msg') or 'Den lokale AI fejlede.')
 
 
 def _quiet():

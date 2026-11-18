@@ -57,7 +57,7 @@ class UpdateTest(unittest.TestCase):
     def test_offline(self):
         s = self.check(url='https://127.0.0.1:1/app-v1.json')     # an allowed address that nothing answers
         self.assertEqual(s['code'], 'offline')
-        self.assertIn('still works', s['message'])
+        self.assertIn('virker stadig', s['message'])
 
     def test_not_published(self):
         self.files.data.pop('app-v1.json', None)

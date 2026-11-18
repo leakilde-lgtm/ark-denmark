@@ -244,7 +244,7 @@ def estimate_ai(ram, gpus, unified, memory_bytes):
     On a Mac that is all one memory. On Windows the part that fits on the graphics card does not count against the computer's own."""
     needs = int(memory_bytes + RESERVE)
     if not ram:
-        return {'fits': False, 'needs_bytes': needs, 'estimate': True, 'why': 'Lastbook could not tell how much memory this computer has.'}
+        return {'fits': False, 'needs_bytes': needs, 'estimate': True, 'why': 'ARK kunne ikke se, hvor meget hukommelse computeren har.'}
     if unified or not gpus:
         in_ram = needs
     else:
@@ -253,11 +253,11 @@ def estimate_ai(ram, gpus, unified, memory_bytes):
     fits = ram >= in_ram
     out = {'fits': fits, 'needs_bytes': needs, 'estimate': True}
     if fits:
-        out['why'] = f'The local AI needs about {_gb(needs)} of memory, and this computer has {_gb(ram)}' + (
-            '.' if unified or not gpus else ' plus its graphics memory.')
+        out['why'] = f'Den lokale AI skal bruge ca. {_gb(needs)} hukommelse, og computeren har {_gb(ram)}' + (
+            '.' if unified or not gpus else ' plus grafikhukommelse.')
     else:
-        out['why'] = (f'The local AI needs about {_gb(in_ram)} of this computer’s memory, and it has {_gb(ram)}. '
-                      'Lastbook works without it: search and reading are the same.')
+        out['why'] = (f'Den lokale AI skal bruge ca. {_gb(in_ram)} af computerens hukommelse, og den har {_gb(ram)}. '
+                      'ARK virker uden den. Søgning og læsning er det samme.')
     return out
 
 
@@ -278,7 +278,7 @@ def measure_ai(llm_local, model_path, timeout=180):
         return None
     j = llm_local.judge(fit)
     return {'fits': bool(j['fits']), 'needs_bytes': int(j['needs']), 'estimate': False,
-            'why': j.get('why') or f'Measured on this computer: the local AI needs about {_gb(j["needs"])} of memory, and it fits.'}
+            'why': j.get('why') or f'Målt på denne computer: den lokale AI skal bruge ca. {_gb(j["needs"])} hukommelse, og den passer.'}
 
 
 def detect(extra_disks=()):

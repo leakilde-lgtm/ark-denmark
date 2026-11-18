@@ -57,14 +57,14 @@ STALL = 60                      # seconds without WebKit reading any of an answe
 MEMORY_LIMIT_MB = 4096          # the page's process; over it WebKit ends the page and the app starts again at home (as the Mac shell's MEMORY_LIMIT)
 NO_NETWORK = json.dumps([{'trigger': {'url-filter': '.*'}, 'action': {'type': 'block'}}]
                         + [{'trigger': {'url-filter': '^' + scheme + ':'}, 'action': {'type': 'ignore-previous-rules'}} for scheme in (SCHEME, 'data', 'blob', 'about')])
-NO_NETWORK_REFUSED = 'ARK could not switch off its network access, so it will not open anything.'
+NO_NETWORK_REFUSED = 'ARK kunne ikke slå netværksadgangen fra, så den åbner ikke noget.'
 FEATURES_OFF = ('PeerConnectionEnabled', 'NavigationAPIEnabled', 'LinkPreconnect', 'LinkPreconnectEarlyHintsEnabled', 'LinkDNSPrefetchEnabled',
                 'LinkPrefetchEnabled', 'SpeculationRulesPrefetchEnabled', 'WebSocketEnabled', 'WebTransportEnabled', 'BeaconAPIEnabled', 'PushAPIEnabled',
                 'PrivateClickMeasurementEnabled', 'SafeBrowsingEnabled')
 MENU_KEEP = {getattr(WebKit2.ContextMenuAction, n) for n in ('COPY', 'CUT', 'PASTE', 'SELECT_ALL', 'COPY_IMAGE_TO_CLIPBOARD', 'PASTE_AS_PLAIN_TEXT') if hasattr(WebKit2.ContextMenuAction, n)}
 STOPPED = 'A page stopped working, so it was closed.'
 TOO_BIG = 'A page was using too much memory, so it was closed.'
-GO = [('Videos', '#/videos'), ('Map', '#/map'), ('Chat', '#/ask')]
+GO = [('Videoer', '#/videos'), ('Kort', '#/map'), ('Chat', '#/ask')]
 SIDE_TOGGLE = "document.getElementById('sideBtn').click()"
 FIND = "document.dispatchEvent(new KeyboardEvent('keydown',{key:'f',code:'KeyF',metaKey:true}))"   # the page's own find, as the Mac menu asks for it
 _gtk_ok = None
@@ -110,7 +110,7 @@ def _flush():
 
 def _chooser(title, parent, files, start):
     action = Gtk.FileChooserAction.OPEN if files else Gtk.FileChooserAction.SELECT_FOLDER
-    d = Gtk.FileChooserNative.new(title, parent, action, 'Choose', 'Cancel')
+    d = Gtk.FileChooserNative.new(title, parent, action, 'Vælg', 'Annuller')
     d.set_modal(True)
     d.set_select_multiple(False)
     d.set_local_only(True)
@@ -131,7 +131,7 @@ def choose_folder(title, message):
         return None
     d = Gtk.MessageDialog(message_type=Gtk.MessageType.QUESTION, buttons=Gtk.ButtonsType.NONE, text=title)
     d.format_secondary_text(message)
-    d.add_buttons('Quit', Gtk.ResponseType.CANCEL, 'Choose Folder…', Gtk.ResponseType.ACCEPT)
+    d.add_buttons('Afslut', Gtk.ResponseType.CANCEL, 'Vælg mappe…', Gtk.ResponseType.ACCEPT)
     d.set_default_response(Gtk.ResponseType.ACCEPT)
     _icon(d)
     r = d.run()
@@ -139,13 +139,13 @@ def choose_folder(title, message):
     _flush()
     if r != Gtk.ResponseType.ACCEPT:
         return None
-    return _chooser('Choose the folder called LastbookData', None, False, os.path.expanduser('~/Downloads'))
+    return _chooser('Vælg mappen, der hedder LastbookData', None, False, os.path.expanduser('~/Downloads'))
 
 
 def pick(files, start):
     """For setup's Choose… buttons. Called on the main thread (main.pick_folder posts it here)."""
     parent = SHELL.window if SHELL else None
-    return _chooser('Choose a library zip or model file' if files else 'Choose a folder', parent, files, start) or None
+    return _chooser('Vælg en biblioteks-zip eller modelfil' if files else 'Vælg en mappe', parent, files, start) or None
 
 
 # --------------------------------------------------------------------------------------------------------- one copy only --
@@ -173,7 +173,7 @@ def claim(lock_dir):
         _lock_file = open(os.path.join(lock_dir, 'lastbook.lock'), 'w')
         fcntl.flock(_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
-        show_error('ARK is already open.')
+        show_error('ARK er allerede åben.')
         return False
     return True
 
@@ -402,21 +402,21 @@ class Shell:
             go.append(name, f'win.go{i}')
         menu.append_section(None, go)
         view = Gio.Menu()
-        view.append('Show or Hide Sidebar', 'win.sidebar')
+        view.append('Vis eller skjul sidepanel', 'win.sidebar')
         view.append('Find…', 'win.find')
-        view.append('Full Screen', 'win.fullscreen')
+        view.append('Fuld skærm', 'win.fullscreen')
         menu.append_section(None, view)
         helps = Gio.Menu()
-        helps.append('ARK Help', 'win.help')
-        helps.append('Check for Updates…', 'win.updates')
-        helps.append('Quit ARK', 'win.quit')
+        helps.append('Hjælp til ARK', 'win.help')
+        helps.append('Søg efter opdateringer…', 'win.updates')
+        helps.append('Afslut ARK', 'win.quit')
         menu.append_section(None, helps)
         btn = Gtk.MenuButton(menu_model=menu, image=Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.BUTTON))
         btn.set_tooltip_text('Menu')
         bar.pack_end(btn)
         nav = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         nav.get_style_context().add_class('linked')
-        for icon, tip, act in (('go-previous-symbolic', 'Back', 'win.back'), ('go-next-symbolic', 'Forward', 'win.forward')):
+        for icon, tip, act in (('go-previous-symbolic', 'Tilbage', 'win.back'), ('go-next-symbolic', 'Frem', 'win.forward')):
             b = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
             b.set_tooltip_text(tip)
             b.set_action_name(act)
@@ -706,7 +706,7 @@ def run(bridge, app_dirs):
     """Show the window and stay here until it closes."""
     global SHELL, APP
     if not _gtk():
-        raise RuntimeError('ARK needs a desktop to open its window (no display was found).')
+        raise RuntimeError('ARK skal bruge et skrivebord for at åbne sit vindue (der blev ikke fundet en skærm).')
     if APP is None:
         APP = Gtk.Application(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE)
     SHELL = Shell(bridge, app_dirs)

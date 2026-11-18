@@ -1840,7 +1840,7 @@ class Handler(library.Handler):
         return bool(m and secrets.compare_digest(m.group(1), LAN_KEY))
 
     def deny(self):
-        body = '<!doctype html><meta name=viewport content="width=device-width"><title>ARK — Viden der overlever</title><p style="font:18px system-ui;padding:24px">This guide is shared on this network only with an access link. Ask the person running it for the link shown when it started.</p>'.encode()
+        body = '<!doctype html><meta name=viewport content="width=device-width"><title>ARK — Viden der overlever</title><p style="font:18px system-ui;padding:24px">Guiden deles kun på dette netværk med et adgangslink. Bed den, der kører den, om linket, der blev vist, da den startede.</p>'.encode()
         self.send_response(403)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))
@@ -1954,13 +1954,13 @@ class Handler(library.Handler):
                 gone[0] = True  # the person pressed Stop or left; stop calling the model
         st = assistant.model_status()
         if not st['online']:
-            emit({'type': 'error', 'error': 'model_unavailable', 'text': 'The local assistant model is not running right now.'})
+            emit({'type': 'error', 'error': 'model_unavailable', 'text': 'Den lokale assistentmodel kører ikke lige nu.'})
             return
         try:
             assistant.chat(msgs, about, emit, lambda: gone[0])
         except Exception as e:
             traceback.print_exc()
-            emit({'type': 'error', 'error': 'internal', 'text': f'The assistant stopped on an internal error ({type(e).__name__}).'})
+            emit({'type': 'error', 'error': 'internal', 'text': f'Assistenten stoppede på en intern fejl ({type(e).__name__}).'})
 
     def do_GET(self):
         try:

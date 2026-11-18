@@ -81,22 +81,22 @@ def is_library(folder):
 def _member_parts(info, top_optional=False):
     name = info.filename
     if '\\' in name or '\x00' in name:
-        raise Refused('unpack', f'The pack holds a file with a name Lastbook does not accept ({name[:80]!r}).')
+        raise Refused('unpack', f'Pakken indeholder en fil med et navn, ARK ikke accepterer ({name[:80]!r}).')
     p = PurePosixPath(name)
     if p.is_absolute() or name.startswith('/') or (p.parts and ':' in p.parts[0]):
-        raise Refused('unpack', f'The pack holds a file with an absolute path ({name[:80]!r}).')
+        raise Refused('unpack', f'Pakken indeholder en fil med en absolut sti ({name[:80]!r}).')
     parts = [x for x in p.parts if x not in ('', '.')]
     if any(x == '..' for x in parts):
-        raise Refused('unpack', f'The pack holds a file that would land outside the library ({name[:80]!r}).')
+        raise Refused('unpack', f'Pakken indeholder en fil, der ville lande uden for biblioteket ({name[:80]!r}).')
     if top_optional and parts and parts[0] != DATA_NAME:
         parts = [DATA_NAME] + parts     # a state map zip may hold its files at the top, without the LastbookData folder
     if not parts or parts[0] != DATA_NAME:
-        raise Refused('unpack', f'The pack holds a file outside its LastbookData folder ({name[:80]!r}).')
+        raise Refused('unpack', f'Pakken indeholder en fil uden for mappen LastbookData ({name[:80]!r}).')
     mode = (info.external_attr >> 16) & 0o170000
     if mode and mode not in (stat.S_IFREG, stat.S_IFDIR):
-        raise Refused('unpack', f'The pack holds a link or a special file ({name[:80]!r}).')
+        raise Refused('unpack', f'Pakken indeholder et link eller en særlig fil ({name[:80]!r}).')
     if info.flag_bits & 0x1:
-        raise Refused('unpack', 'The pack is encrypted.')
+        raise Refused('unpack', 'Pakken er krypteret.')
     return parts
 
 
@@ -119,21 +119,21 @@ def check_zip(path, installed_bytes=None, allowed=None):
     try:
         z = zipfile.ZipFile(path)
     except (OSError, zipfile.BadZipFile) as e:
-        raise Refused('unpack', f'The pack could not be opened as a zip file ({type(e).__name__}).')
+        raise Refused('unpack', f'Pakken kunne ikke åbnes som en zip-fil ({type(e).__name__}).')
     with z:
         members, total, seen = [], 0, set()
         for info in z.infolist():
             parts = _member_parts(info, top_optional=allowed is not None)
             if allowed and not allowed('/'.join(parts[1:]), info.is_dir()):
-                raise Refused('unpack', f'The map holds a file that is not part of a map ({info.filename[:80]!r}).')
+                raise Refused('unpack', f'Kortet indeholder en fil, der ikke hører til et kort ({info.filename[:80]!r}).')
             key = '/'.join(parts).lower()      # two names that differ only in case would overwrite each other on a Mac or Windows
             if key in seen and not info.is_dir():
-                raise Refused('unpack', f'The pack holds the same file twice ({info.filename[:80]!r}).')
+                raise Refused('unpack', f'Pakken indeholder den samme fil to gange ({info.filename[:80]!r}).')
             seen.add(key)
             if info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED):
-                raise Refused('unpack', f'The pack uses a kind of compression Lastbook does not accept ({info.filename[:80]!r}).')
+                raise Refused('unpack', f'Pakken bruger en komprimering, ARK ikke accepterer ({info.filename[:80]!r}).')
             if info.compress_type == zipfile.ZIP_STORED and info.compress_size != info.file_size:
-                raise Refused('unpack', f'The pack holds a stored file whose sizes disagree ({info.filename[:80]!r}).')
+                raise Refused('unpack', f'Pakken indeholder en gemt fil, hvis størrelser ikke stemmer ({info.filename[:80]!r}).')
             total += info.file_size
             members.append((info, parts))
         # No two entries may share bytes: each one's local header (at least 30 bytes) and data must end before the next begins,
@@ -143,9 +143,9 @@ def check_zip(path, installed_bytes=None, allowed=None):
         for a, b in zip(spans, spans[1:] + [None]):
             limit = b.header_offset if b is not None else end_of_data
             if limit is not None and a.header_offset + 30 + a.compress_size > limit:
-                raise Refused('unpack', f'The pack holds entries that overlap ({a.filename[:80]!r}).')
+                raise Refused('unpack', f'Pakken indeholder poster, der overlapper ({a.filename[:80]!r}).')
     if installed_bytes is not None and total > installed_bytes * SLACK + 1024 * 1024:
-        raise Refused('unpack', f'The pack unpacks to {total:,} bytes, more than the {installed_bytes:,} it should.')
+        raise Refused('unpack', f'Pakken pakkes ud til {total:,} byte, mere end de {installed_bytes:,}, den skal være.')
     return members, total
 
 
@@ -165,13 +165,13 @@ def unpack(zip_path, into, installed_bytes, control, progress, allowed=None, ver
             control.check()
             dest = root.joinpath(*parts)
             if root not in dest.parents and dest != root:
-                raise Refused('unpack', 'The pack holds a file that would land outside the library.')
+                raise Refused('unpack', 'Pakken indeholder en fil, der ville lande uden for biblioteket.')
             if info.is_dir():
                 dest.mkdir(parents=True, exist_ok=True)
                 continue
             dest.parent.mkdir(parents=True, exist_ok=True)
             if dest.is_symlink():
-                raise Refused('unpack', 'A link appeared in the unpack folder.')
+                raise Refused('unpack', 'Et link dukkede op i udpakningsmappen.')
             if dest.is_file() and dest.stat().st_size == info.file_size:
                 done += info.file_size          # whole from an earlier run
                 progress(done, total)
@@ -186,12 +186,12 @@ def unpack(zip_path, into, installed_bytes, control, progress, allowed=None, ver
                         break
                     written += len(b)
                     if written > info.file_size:        # stop at once, not after: a member never grows past its declared size
-                        raise Refused('unpack', f'A file in the pack is larger than it says ({info.filename[:80]!r}).')
+                        raise Refused('unpack', f'En fil i pakken er større, end den siger ({info.filename[:80]!r}).')
                     out.write(b)
                     done += len(b)
                     progress(done, total)
             if part.stat().st_size != info.file_size:
-                raise Refused('unpack', f'A file in the pack came out the wrong size ({info.filename[:80]!r}).')
+                raise Refused('unpack', f'En fil i pakken fik den forkerte størrelse ({info.filename[:80]!r}).')
             os.replace(part, dest)
             t = time.mktime(info.date_time + (0, 0, -1))
             os.utime(dest, (t, t))
@@ -201,7 +201,7 @@ def unpack(zip_path, into, installed_bytes, control, progress, allowed=None, ver
     elif allowed:
         check_map(lib)
     elif not is_library(lib):
-        raise Refused('unpack', 'The unpacked pack has no library catalog in it.')
+        raise Refused('unpack', 'Den udpakkede pakke har intet bibliotekskatalog.')
     return lib
 
 
@@ -278,7 +278,7 @@ def switch(new_lib, target):
     """The renames. Returns the old library's new name, or None when there was none. Raises Refused, leaving things as they were."""
     new_lib, target = Path(new_lib), Path(target)
     if not is_library(new_lib):
-        raise Refused('activate', 'The new library is not complete.')
+        raise Refused('activate', 'Det nye bibliotek er ikke komplet.')
     old = None
     if target.exists():
         old = old_name(target)
@@ -287,13 +287,13 @@ def switch(new_lib, target):
         try:
             os.replace(target, old)
         except OSError as e:
-            raise Refused('activate', f'Lastbook could not move the old library aside ({type(e).__name__}). Close anything using it, then try again.')
+            raise Refused('activate', f'ARK kunne ikke flytte det gamle bibliotek til side ({type(e).__name__}). Luk det, der bruger det, og prøv igen.')
     try:
         os.replace(new_lib, target)
     except OSError as e:
         if old:
             os.replace(old, target)
-        raise Refused('activate', f'Lastbook could not put the new library in place ({type(e).__name__}).')
+        raise Refused('activate', f'ARK kunne ikke lægge det nye bibliotek på plads ({type(e).__name__}).')
     return old
 
 
@@ -322,13 +322,13 @@ def check_map(lib):
     """Every file map-set.json lists is there at its size, and each is a map file."""
     d = map_set(lib)
     if not d:
-        raise Refused('unpack', 'The map has no map-set.json in it.')
+        raise Refused('unpack', 'Kortet har ingen map-set.json.')
     for rel, size in d['files'].items():
         if not map_member(rel) or '..' in Path(rel).parts:
-            raise Refused('unpack', f'The map lists a file that is not part of a map ({rel[:80]!r}).')
+            raise Refused('unpack', f'Kortet nævner en fil, der ikke hører til et kort ({rel[:80]!r}).')
         p = Path(lib) / rel
         if not p.is_file() or p.stat().st_size != size:
-            raise Refused('unpack', f'The map’s {rel} is missing or the wrong size.')
+            raise Refused('unpack', f'Kortets {rel} mangler eller har den forkerte størrelse.')
     return d
 
 
@@ -393,7 +393,7 @@ def swap_map(lib, new, old_dir):
             os.replace(lib / rel, new / rel)
         for rel in moved_out:
             os.replace(old_dir / rel, lib / rel)
-        raise Refused('activate', f'Lastbook could not put the new map in place ({type(e).__name__}).')
+        raise Refused('activate', f'ARK kunne ikke lægge det nye kort på plads ({type(e).__name__}).')
 
 
 def replace_map_in(staged, new):

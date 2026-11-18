@@ -12,14 +12,14 @@
 
   function view(s) {
     const btn = (t) => `<button class="btn plain" data-upd="check">${t}</button>`;
-    const ver = s.current ? `Version ${E(s.current)}.` : 'This copy has no version number (it was not built as an app).';
+    const ver = s.current ? `Version ${E(s.current)}.` : 'Denne kopi har ikke et versionsnummer (den er ikke bygget som en app).';
     switch (s.state) {
-      case 'checking': return `${ver} Checking for updates…`;
-      case 'up_to_date': return `${ver} ARK is up to date. ${btn('Check again')}`;
-      case 'available': return `${ver} Version ${E(s.version)} is available. Download it from ${E(s.website)}. Your library, local AI and chats stay. ${btn('Check again')}`;
-      case 'not_published': return `${ver} No update information yet. ${btn('Try again')}`;
-      case 'too_old_os': case 'error': return `${ver} ${E(s.message)} ${btn('Try again')}`;
-      default: return `${ver} ${btn('Check for updates')}`;
+      case 'checking': return `${ver} Tjekker efter opdateringer…`;
+      case 'up_to_date': return `${ver} ARK er ajour. ${btn('Tjek igen')}`;
+      case 'available': return `${ver} Version ${E(s.version)} er klar. Hent den fra ${E(s.website)}. Dit bibliotek, din lokale AI og dine chats beholdes. ${btn('Tjek igen')}`;
+      case 'not_published': return `${ver} Ingen opdateringsoplysninger endnu. ${btn('Prøv igen')}`;
+      case 'too_old_os': case 'error': return `${ver} ${E(s.message)} ${btn('Prøv igen')}`;
+      default: return `${ver} ${btn('Tjek efter opdateringer')}`;
     }
   }
 
@@ -31,7 +31,7 @@
 
   async function refresh(el) {
     if (!el.isConnected) return;
-    try { paint(el, await call('state')) } catch { el.textContent = 'ARK could not ask about updates.' }
+    try { paint(el, await call('state')) } catch { el.textContent = 'ARK kunne ikke spørge efter opdateringer.' }
   }
 
   async function check(el) {
@@ -39,7 +39,7 @@
       const s = await call('check');
       if (s.error && !s.state) { el.textContent = s.error; return }
       paint(el, s);
-    } catch { el.textContent = 'ARK could not ask about updates.' }
+    } catch { el.textContent = 'ARK kunne ikke spørge efter opdateringer.' }
   }
 
   window.LBUpdate = {

@@ -385,7 +385,7 @@ class Downloads(Base):
         with self.assertRaises(download.Failed) as e:
             d.run()
         self.assertEqual(e.exception.code, 'network')
-        self.assertIn('could not confirm it is talking to the download server', e.exception.message)
+        self.assertIn('kunne ikke bekræfte', e.exception.message)
         self.assertLess(time.time() - t0, 5)          # no retries
 
     def test_roots_only(self):
@@ -587,7 +587,7 @@ class Jobs(Base):
         with mock.patch.object(api, 'path_too_deep', lambda t: True):
             r = s.start('small', False)
         self.assertEqual(r['code'], 'folder')
-        self.assertIn('characters', r['error'])
+        self.assertIn('tegn', r['error'])
         self.assertIsNone(s.public_job())
 
     def test_no_space_refusal(self):
@@ -673,7 +673,7 @@ class Jobs(Base):
         j = self.wait(bad_explicit)
         self.assertEqual(j['error']['code'], 'found_mismatch')      # not 'checksum': nothing was downloaded
         self.assertEqual(j['error']['file'], str(mine))
-        self.assertIn('Lastbook-Small.zip in Downloads doesn’t match the published file', j['error']['message'])
+        self.assertIn('Lastbook-Small.zip i Downloads passer ikke med den udgivne fil', j['error']['message'])
         self.assertEqual((mine.stat().st_size, mine.stat().st_mtime_ns, sha(mine.read_bytes())), before)   # the person's file, untouched
         f = next(x for x in bad_explicit.found() if x['path'] == str(mine))
         self.assertTrue(f['rejected'])
@@ -1281,7 +1281,7 @@ class Recommend(Base):
         with mock.patch.object(hardware, 'disk_of', lambda p: (10 ** 8, 10 ** 11)):
             r = s.recommend(self.hw(64 * 2 ** 30, 10 ** 8))
         self.assertIsNone(r['pack'])
-        self.assertIn('free', r['why'])
+        self.assertIn('fri', r['why'])
         with mock.patch.object(hardware, 'disk_of', lambda p: (10 ** 12, 2 * 10 ** 12)):
             r = s.recommend(self.hw(8 * 2 ** 30, 10 ** 12))
         self.assertEqual((r['pack'], r['ai']), ('small', False))
@@ -1306,11 +1306,11 @@ class Recommend(Base):
             r = s.recommend(hw)
             self.assertEqual((r['pack'], r['folder']), ('small', str(self.parent)))
             self.assertTrue(r['ai'])
-            self.assertIn('Small is selected', r['why'])
+            self.assertIn('Small er valgt', r['why'])
         with mock.patch.object(hardware, 'disk_of', lambda p: (10 * 10 ** 9, 8 * 10 ** 12)), mock.patch.object(api, '_same_disk', same):
             r = s.recommend({**hw, 'disks': [{'path': str(self.home), 'free_bytes': 10 ** 10, 'total_bytes': 8 * 10 ** 12}, ext]})
             self.assertEqual((r['pack'], r['folder']), ('small', str(Path('/Volumes/Ext'))))
-            self.assertIn('Keep that disk connected', r['why'])
+            self.assertIn('Hold den disk tilsluttet', r['why'])
 
     def test_disk_detection_never_scans_unselected_drives(self):
         original_stat = Path.stat

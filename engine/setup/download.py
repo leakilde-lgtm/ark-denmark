@@ -99,8 +99,8 @@ def tls_context():
     packaging/setup_roots.py for why and which). With the file missing, nothing is downloaded."""
     roots = roots_path()
     if not roots.is_file():
-        raise Failed('network', 'This copy of Lastbook is missing its list of trusted download servers, so it cannot download. '
-                                'Download Lastbook again.')
+        raise Failed('network', 'Denne udgave af ARK mangler listen over godkendte downloadservere, så den kan ikke hente. '
+                                'Hent ARK igen.')
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)          # check_hostname on and CERT_REQUIRED; no default certificates loaded
     ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     ctx.load_verify_locations(cafile=str(roots))
@@ -132,7 +132,7 @@ def _open(url, start, etag, allowed, context, timeout):
     """(connection, response, final url) for a GET from byte `start`, after following allowed redirects."""
     for _ in range(MAX_REDIRECTS + 1):
         if not url_allowed(url, allowed):
-            raise Failed('network', 'Lastbook refused to download from an address it does not know.')
+            raise Failed('network', 'ARK afviste at hente fra en adresse, den ikke kender.')
         u = urllib.parse.urlsplit(url)
         conn = http.client.HTTPSConnection(u.hostname, u.port or 443, timeout=timeout, context=context)
         headers = {'User-Agent': USER_AGENT, 'Accept-Encoding': 'identity'}
@@ -147,11 +147,11 @@ def _open(url, start, etag, allowed, context, timeout):
             r.close()
             conn.close()
             if not loc:
-                raise Failed('network', 'The download server answered with a move to nowhere.')
+                raise Failed('network', 'Downloadserveren svarede med en flytning til ingen steder.')
             url = urllib.parse.urljoin(url, loc)
             continue
         return conn, r, url
-    raise Failed('network', 'The download server sent Lastbook round in circles.')
+    raise Failed('network', 'Downloadserveren sendte ARK rundt i ring.')
 
 
 def fetch_small(url, limit=1 << 20, allowed=None, context=None, timeout=10):
@@ -273,22 +273,22 @@ class Download:
                 h, start, etag = hashlib.sha256(), 0, None
                 continue
             except ssl.SSLCertVerificationError:
-                raise Failed('network', 'Lastbook could not confirm it is talking to the download server, so it stopped. '
-                                        'A network that intercepts secure connections (some offices, hotels) can cause this.')
+                raise Failed('network', 'ARK kunne ikke bekræfte, at den taler med downloadserveren, så den stoppede. '
+                                        'Et netværk, der afbryder sikre forbindelser (nogle kontorer og hoteller), kan være årsagen.')
             except (OSError, http.client.HTTPException, ValueError) as e:
                 if disk_full(e):
-                    raise Failed('no_space', 'The disk filled up while downloading. Free some space, then try again.')
+                    raise Failed('no_space', 'Disken blev fyldt under hentningen. Frigør plads, og prøv igen.')
                 now = self.done_bytes()     # h already holds every byte written: it is updated just after each write
                 tries = 0 if now > start else tries + 1
                 start = now
                 etag = _load_meta(self.meta).get('etag') or etag
                 if tries >= NETWORK_TRIES:
-                    raise Failed('network', f'The connection kept breaking ({type(e).__name__}). Check the internet connection, then try again.')
+                    raise Failed('network', f'Forbindelsen blev ved med at ryge ({type(e).__name__}). Tjek internetforbindelsen, og prøv igen.')
                 print(f'setup: download broke at {start} of {self.size}: {type(e).__name__}: {e}; trying again', flush=True)
                 self.control.sleep(BACKOFF[min(tries, len(BACKOFF) - 1)])
         if h.hexdigest() != self.sha256:
             self.discard()
-            raise BadChecksum('The downloaded file did not match its published checksum.')
+            raise BadChecksum('Den hentede fil matchede ikke sin udgivne kontrolsum.')
         os.replace(self.part, self.dest)
         try:
             os.unlink(self.meta)
@@ -303,7 +303,7 @@ class Download:
             if r.status == 416 or r.status >= 400:
                 if 500 <= r.status < 600:
                     raise OSError(f'HTTP {r.status}')
-                raise Failed('network', f'The download server refused the file (HTTP {r.status}).')
+                raise Failed('network', f'Downloadserveren afviste filen (HTTP {r.status}).')
             new_etag = r.getheader('ETag')
             if r.status == 206:
                 cr = _content_range(r.getheader('Content-Range'))

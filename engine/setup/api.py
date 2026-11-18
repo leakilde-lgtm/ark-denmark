@@ -340,7 +340,7 @@ class Setup:
     def ai_fit(self, hw):
         m = self.manifest.model()
         if not m:
-            return {'fits': False, 'needs_bytes': None, 'estimate': True, 'why': 'No local AI is offered for this version.'}
+            return {'fits': False, 'needs_bytes': None, 'estimate': True, 'why': 'Der tilbydes ingen lokal AI til denne version.'}
         if self.ai_measure:
             return self.ai_measure
         path = self._model_path_here()
@@ -372,7 +372,7 @@ class Setup:
         need = {p['id']: install.need_bytes(p, None) for p in available}
         map_need = {x['id']: _map_need(x, ()) for x in self.manifest.current.get('maps', []) if x['available']}
         if not packs:
-            return {'pack': None, 'ai': False, 'folder': str(parent), 'need_bytes': need, 'why': 'No library is ready to download yet.'}
+            return {'pack': None, 'ai': False, 'folder': str(parent), 'need_bytes': need, 'why': 'Der er endnu intet bibliotek klar til hentning.'}
         margin = _margin(total)
         choice, folder, elsewhere = None, parent, None
         for p in packs:        # the disk that holds the home folder (or the open library) whenever anything fits there
@@ -390,7 +390,7 @@ class Setup:
         if not choice:
             small = packs[-1]
             return {'pack': None, 'ai': False, 'folder': str(parent), 'need_bytes': need,
-                    'why': f'The smallest library, {small["title"]}, needs {_gb(need[small["id"]])} free, and this computer has {_gb(free)} free.'}
+                    'why': f'Det mindste bibliotek, {small["title"]}, skal bruge {_gb(need[small["id"]])} fri plads, og computeren har {_gb(free)} fri.'}
         if elsewhere:
             home_free = free
             free, margin = elsewhere['free_bytes'], _margin(elsewhere['total_bytes'])
@@ -398,14 +398,14 @@ class Setup:
         ai = bool(model and hw['ai']['fits'] and left >= model['size'] + margin)
         if elsewhere:
             name = elsewhere.get('name') or Path(elsewhere['path']).name or elsewhere['path']
-            why = (f'This computer’s own disk has {_gb(home_free)} free, not enough for any library, so {choice["title"]} goes on {name}. '
-                   'Keep that disk connected: Lastbook reads the library from it.')
+            why = (f'Computerens egen disk har {_gb(home_free)} fri, ikke nok til noget bibliotek, så {choice["title"]} lægges på {name}. '
+                   'Hold den disk tilsluttet. ARK læser biblioteket fra den.')
         else:
-            why = 'Small is selected to get started. You can choose a larger library.'
+            why = 'Small er valgt for at komme i gang. Du kan vælge et større bibliotek.'
         if self.default_why and not elsewhere and not self.current:
             why = self.default_why + ' ' + why
         if model and hw['ai']['fits'] and not ai:
-            why += ' The local AI fits this computer’s memory, but not on the disk as well.'
+            why += ' Den lokale AI passer i computerens hukommelse, men ikke også på disken.'
         elif model and not hw['ai']['fits']:
             why += ' ' + hw['ai']['why']
         return {'pack': choice['id'], 'ai': ai, 'folder': str(folder), 'need_bytes': need, 'map_need_bytes': map_need, 'address_need_bytes': {x['id']: _map_need(x, ()) for x in self.manifest.current.get('address_indexes', []) if x['available']}, 'why': why}
@@ -434,10 +434,10 @@ class Setup:
             return self._start_repair(ai)
         with self.lock:
             if self.job and self.job['state'] in ACTIVE + ('paused',):
-                return {'error': 'A download is already under way. Pause or cancel it first.', 'code': 'busy'}
+                return {'error': 'En download er allerede i gang. Sæt den på pause, eller annuller den først.', 'code': 'busy'}
             pack = self.manifest.pack(pack_id) if pack_id else None
             if pack_id and (not pack or not pack['available']):
-                return {'error': 'That library is not available yet.', 'code': 'unavailable'}
+                return {'error': 'Det bibliotek er ikke tilgængeligt endnu.', 'code': 'unavailable'}
             cur = self.current_info() or {}
             if folder and self.current and install._real(Path(folder).expanduser()) == install._real(self.current):
                 folder = None
@@ -446,10 +446,10 @@ class Setup:
                 pack = None        # the same library again: only the AI is wanted
             model = self.manifest.model() if ai else None
             if ai and not model:
-                return {'error': 'No local AI is offered for this version.', 'code': 'unavailable'}
+                return {'error': 'Der tilbydes ingen lokal AI til denne version.', 'code': 'unavailable'}
             mp = self.manifest.map(map_id) if map_id else None
             if map_id and (not mp or not mp['available']):
-                return {'error': 'That state’s map is not available yet.', 'code': 'unavailable'}
+                return {'error': 'Den delstats kort er ikke tilgængeligt endnu.', 'code': 'unavailable'}
             requested_address = address_id
             address_id = address_id or map_id or (pack or {}).get('map') or cur.get('map')
             if address_id in ('base', 'us'):
@@ -457,7 +457,7 @@ class Setup:
             addresses = self.manifest.address_index(address_id) if address_id else None
             if not addresses or not addresses['available']:
                 if requested_address:
-                    return {'error': 'That state’s address search is not available yet.', 'code': 'unavailable'}
+                    return {'error': 'Den delstats adressesøgning er ikke tilgængelig endnu.', 'code': 'unavailable'}
                 addresses = None
             if folder and self.current and install._real(Path(folder).expanduser()) == install._real(self.current):
                 folder = None      # the window sends the shown folder, which in manage mode is the open library itself
@@ -471,24 +471,24 @@ class Setup:
             if mp and not pack and cur.get('map') == mp['id']:
                 mp = None          # this state's map is the one here already
             if self.mode == 'first-run' and not pack and (model or mp or addresses):
-                return {'error': 'Choose a library first.', 'code': 'nothing'}
+                return {'error': 'Vælg et bibliotek først.', 'code': 'nothing'}
             if not pack and not model and not mp and not addresses:
                 if self.mode == 'first-run':
-                    return {'error': 'Choose a library first.', 'code': 'nothing'}
-                return {'error': 'Nothing to add: this library and the local AI are already here.', 'code': 'nothing'}
+                    return {'error': 'Vælg et bibliotek først.', 'code': 'nothing'}
+                return {'error': 'Der er ikke noget at tilføje. Biblioteket og den lokale AI er allerede her.', 'code': 'nothing'}
             try:
                 parent.mkdir(parents=True, exist_ok=True)
             except OSError as e:
-                return {'error': f'Lastbook cannot make a folder there ({type(e).__name__}).', 'code': 'folder'}
+                return {'error': f'ARK kan ikke oprette en mappe dér ({type(e).__name__}).', 'code': 'folder'}
             if not os.access(parent, os.W_OK):
-                return {'error': 'Lastbook cannot save in that folder. Choose another.', 'code': 'folder'}
+                return {'error': 'ARK kan ikke gemme i den mappe. Vælg en anden.', 'code': 'folder'}
             if path_too_deep(target):
                 room = WINDOWS_MAX_PATH - LONGEST_INSIDE - len('\\') - len(DATA_NAME) - 1
-                return {'error': f'That folder is too deep for Windows: the library’s longest file name would not fit. '
-                                 f'Choose a folder whose path is at most {room} characters long, such as Documents.', 'code': 'folder'}
+                return {'error': f'Den mappe ligger for dybt til Windows. Bibliotekets længste filnavn ville ikke kunne være der. '
+                                 f'Vælg en mappe, hvis sti er højst {room} tegn, for eksempel Dokumenter.', 'code': 'folder'}
             if self.mode == 'first-run' and target.exists() and not install.is_library(target):
                 if any(target.iterdir()):
-                    return {'error': f'There is already a folder called {DATA_NAME} there that is not a library. Choose another place.', 'code': 'folder'}
+                    return {'error': f'Der ligger allerede en mappe, der hedder {DATA_NAME}, som ikke er et bibliotek. Vælg et andet sted.', 'code': 'folder'}
             work = _work_for(target)
             srcs = dict(self.sources)
             srcs.update(sources or {})
@@ -511,7 +511,7 @@ class Setup:
                         pass
             free, _ = hardware.disk_of(parent)
             if free < need:
-                return {'error': f'This needs {_gb(need)} free on that disk, and it has {_gb(free)}. Free some space or choose another disk.',
+                return {'error': f'Der skal være {_gb(need)} fri plads på disken, og der er {_gb(free)}. Frigør plads, eller vælg en anden disk.',
                         'code': 'no_space', 'need_bytes': need, 'free_bytes': free}
             items = []
             if pack:
@@ -544,13 +544,13 @@ class Setup:
         downloaded and switched to as in an upgrade, the model replaced in place. Nothing is downloaded if all is well."""
         with self.lock:
             if self.job and self.job['state'] in ACTIVE + ('paused',):
-                return {'error': 'A download is already under way. Pause or cancel it first.', 'code': 'busy'}
+                return {'error': 'En download er allerede i gang. Sæt den på pause, eller annuller den først.', 'code': 'busy'}
             cur = self.current_info()
             if self.mode != 'manage' or not cur:
-                return {'error': 'There is no library to repair yet.', 'code': 'nothing'}
+                return {'error': 'Der er endnu intet bibliotek at reparere.', 'code': 'nothing'}
             pack = self.manifest.pack(cur['pack']) if cur['pack'] else None
             if not pack or not pack['available']:
-                return {'error': 'Lastbook cannot tell which library this is, so it cannot repair it. Download a library instead.', 'code': 'unavailable'}
+                return {'error': 'ARK kan ikke se, hvilket bibliotek det er, og kan derfor ikke reparere det. Hent et bibliotek i stedet.', 'code': 'unavailable'}
             model = self.manifest.model() if (ai or cur['model']) else None
             parent, target = self.current.parent, self.current
             work = _work_for(target)
@@ -674,7 +674,7 @@ class Setup:
     def use(self, path):
         p = Path(path or '').expanduser()
         if not str(path or '').strip() or not p.exists():
-            return {'error': 'Lastbook cannot find that file or folder.', 'code': 'missing'}
+            return {'error': 'ARK kan ikke finde den fil eller mappe.', 'code': 'missing'}
         if p.is_dir():
             lib = p if install.is_library(p) else p / DATA_NAME
             if not install.is_library(lib):
@@ -685,12 +685,12 @@ class Setup:
                 inside = sorted(c for c in p.iterdir() if c.name in known and c.is_file()) if p.is_dir() else []
                 if inside:          # the person explicitly chose this folder
                     return self.use(str(inside[0]))
-                return {'error': f'“{p.name}” is not a Lastbook library. Choose the folder called {DATA_NAME}.', 'code': 'not_library'}
+                return {'error': f'“{p.name}” er ikke et ARK-bibliotek. Vælg mappen, der hedder {DATA_NAME}.', 'code': 'not_library'}
             if not os.access(lib, os.W_OK):
-                return {'error': f'Lastbook cannot save in “{lib.name}”. Move it somewhere you can save to, then choose it there.', 'code': 'folder'}
+                return {'error': f'ARK kan ikke gemme i “{lib.name}”. Flyt den et sted, hvor du kan gemme, og vælg den dér.', 'code': 'folder'}
             with self.lock:
                 if self.job and self.job['state'] in ACTIVE:
-                    return {'error': 'A download is under way. Pause or cancel it first.', 'code': 'busy'}
+                    return {'error': 'En download er i gang. Sæt den på pause, eller annuller den først.', 'code': 'busy'}
                 self.job = {'id': uuid.uuid4().hex[:12], 'state': 'done', 'error': None, 'started': _now(), 'folder': str(lib),
                             'items': [{'id': 'library', 'kind': 'pack', 'title': lib.name, 'state': 'done', 'bytes_done': 0, 'bytes_total': 0,
                                        'rate_bps': 0, 'eta_s': None, 'error': None}],
@@ -701,16 +701,16 @@ class Setup:
             for f in pk['files']:
                 if f['name'] == name:
                     if p.stat().st_size != f['size']:
-                        return {'error': f'That file is {_gb(p.stat().st_size)}, not the {_gb(f["size"])} of the published {name}. The download may not have finished.', 'code': 'size'}
+                        return {'error': f'Den fil er {_gb(p.stat().st_size)}, ikke de {_gb(f["size"])}, som den udgivne {name} skal være. Hentningen er måske ikke færdig.', 'code': 'size'}
                     if not pk['available']:
-                        return {'error': 'That library is not available in this version.', 'code': 'unavailable'}
+                        return {'error': 'Det bibliotek findes ikke i denne version.', 'code': 'unavailable'}
                     self.sources[name] = str(p)
                     return self.start(pk['id'], False, None, {name: str(p)}, explicit=True)
         for x in self.manifest.current.get('maps', []):
             for f in x['files']:
                 if f['name'] == name:
                     if p.stat().st_size != f['size']:
-                        return {'error': f'That file is {_gb(p.stat().st_size)}, not the {_gb(f["size"])} of the published {name}. The download may not have finished.', 'code': 'size'}
+                        return {'error': f'Den fil er {_gb(p.stat().st_size)}, ikke de {_gb(f["size"])}, som den udgivne {name} skal være. Hentningen er måske ikke færdig.', 'code': 'size'}
                     self.sources[name] = str(p)
                     if self.mode == 'manage':
                         return self.start(None, False, None, {name: str(p)}, explicit=True, map_id=x['id'])
@@ -720,7 +720,7 @@ class Setup:
                 if file['name'] != name:
                     continue
                 if p.stat().st_size != file['size']:
-                    return {'error': 'The address index download is incomplete.', 'code': 'size'}
+                    return {'error': 'Hentningen af adresseindekset er ikke færdig.', 'code': 'size'}
                 self.sources[name] = str(p)
                 if self.mode == 'manage':
                     return self.start(sources={name: str(p)}, explicit=True, address_id=entry['id'])
@@ -728,18 +728,18 @@ class Setup:
         m = self.manifest.model()
         if m and name == m['file']:
             if p.stat().st_size != m['size']:
-                return {'error': f'That file is {_gb(p.stat().st_size)}, not the {_gb(m["size"])} of the model. The download may not have finished.', 'code': 'size'}
+                return {'error': f'Den fil er {_gb(p.stat().st_size)}, ikke de {_gb(m["size"])}, som modellen skal være. Hentningen er måske ikke færdig.', 'code': 'size'}
             self.sources[name] = str(p)
             if self.mode == 'manage':
                 return self.start(None, True, None, {name: str(p)}, explicit=True)
             return self.public_job() or {'job': None, 'noted': True}
-        return {'error': 'That is not a file Lastbook knows. Choose a Lastbook library zip or the model file.', 'code': 'unknown'}
+        return {'error': 'Det er ikke en fil, ARK kender. Vælg en zip med et ARK-bibliotek eller modelfilen.', 'code': 'unknown'}
 
     def finish(self):
         with self.lock:
             job = self.job
             if not job or job['state'] != 'done':
-                return {'error': 'Setup has not finished yet.', 'code': 'not_done'}
+                return {'error': 'Opsætningen er ikke færdig endnu.', 'code': 'not_done'}
             plan = job['plan']
             folder = plan.get('use_library') or plan['target']
         if not self.on_finish:
@@ -767,13 +767,13 @@ class Setup:
         """Manage mode: the model file goes from the open library. The library itself is not touched."""
         m = self.manifest.model()
         if self.mode != 'manage' or not self.current or not m:
-            return {'error': 'There is no local AI in this library to remove.', 'code': 'nothing'}
+            return {'error': 'Der er ingen lokal AI i dette bibliotek at fjerne.', 'code': 'nothing'}
         with self.lock:
             if self.job and self.job['state'] in ACTIVE:
-                return {'error': 'A download is under way. Pause or cancel it first.', 'code': 'busy'}
+                return {'error': 'En download er i gang. Sæt den på pause, eller annuller den først.', 'code': 'busy'}
         p = self.current / 'models' / m['file']
         if not p.is_file():
-            return {'error': 'There is no local AI in this library to remove.', 'code': 'nothing'}
+            return {'error': 'Der er ingen lokal AI i dette bibliotek at fjerne.', 'code': 'nothing'}
         llm = self.llm()
         local = getattr(llm, 'LOCAL', None) if llm else None
         try:
@@ -785,7 +785,7 @@ class Setup:
         try:
             p.unlink()
         except OSError as e:
-            return {'error': f'Lastbook could not remove the model file ({type(e).__name__}). Quit anything using it, then try again.', 'code': 'folder'}
+            return {'error': f'ARK kunne ikke fjerne modelfilen ({type(e).__name__}). Luk det, der bruger den, og prøv igen.', 'code': 'folder'}
         if local is not None and getattr(local, '_started', False):
             threading.Thread(target=local.discover, daemon=True).start()
         return {'ok': True, 'freed_bytes': size}
@@ -794,10 +794,10 @@ class Setup:
         s = self._settings()
         olds = s.get('old', [])
         if path not in olds:
-            return {'error': 'Lastbook only deletes an old library it moved aside itself.', 'code': 'unknown'}
+            return {'error': 'ARK sletter kun et gammelt bibliotek, som den selv har flyttet til side.', 'code': 'unknown'}
         p = Path(path)
         if '.old-' not in p.name:
-            return {'error': 'That is not an old library.', 'code': 'unknown'}
+            return {'error': 'Det er ikke et gammelt bibliotek.', 'code': 'unknown'}
 
         def gone():
             shutil.rmtree(p, ignore_errors=True)
@@ -869,13 +869,13 @@ class Setup:
             self._fail(it, e.code, e.message)
         except OSError as e:
             if download.disk_full(e):
-                self._fail(it, 'no_space', 'The disk filled up. Free some space, then try again.')
+                self._fail(it, 'no_space', 'Disken blev fyldt. Frigør plads, og prøv igen.')
             else:
                 traceback.print_exc()
-                self._fail(it, 'unpack' if it and job['state'] == 'unpacking' else 'network', f'Lastbook could not write a file ({type(e).__name__}: {e.strerror or e}).')
+                self._fail(it, 'unpack' if it and job['state'] == 'unpacking' else 'network', f'ARK kunne ikke skrive en fil ({type(e).__name__}: {e.strerror or e}).')
         except Exception as e:
             traceback.print_exc()
-            self._fail(it, 'activate', f'Setup stopped on an internal error ({type(e).__name__}).')
+            self._fail(it, 'activate', f'Opsætningen stoppede på en intern fejl ({type(e).__name__}).')
 
     def _get_file(self, it, f, plan, work, control, offset):
         """The file, checked against its SHA-256: one already on this computer, or a download. Returns its path."""
@@ -897,8 +897,8 @@ class Setup:
             plan['explicit'] = False
             if explicit_use:
                 folder = Path(src).parent.name or str(Path(src).parent)
-                raise download.Failed('found_mismatch', f'The {name} in {folder} doesn’t match the published file, so it was not used. '
-                                                        'It was left as it is. Download it instead?', file=src)
+                raise download.Failed('found_mismatch', f'{name} i {folder} passer ikke med den udgivne fil, så den blev ikke brugt. '
+                                                        'Den blev liggende, som den er. Hent den i stedet?', file=src)
             print(f'setup: {src} does not match; downloading instead', flush=True)
         dest = work / 'downloads' / name
         if not dest.exists():       # room for what is still to come (the space check at start counted a file already here as had)
@@ -908,7 +908,7 @@ class Setup:
                 still = f['size']
             free, _ = hardware.disk_of(work)
             if free < still + 512 * 2 ** 20:
-                raise download.Failed('no_space', f'Downloading {name} needs {_gb(still)} free, and the disk has {_gb(free)}. Free some space, then try again.',
+                raise download.Failed('no_space', f'Hentning af {name} skal bruge {_gb(still)} fri plads, og disken har {_gb(free)}. Frigør plads, og prøv igen.',
                                       need_bytes=still, free_bytes=free)
         while True:
             self._set(it, 'downloading')
@@ -920,7 +920,7 @@ class Setup:
             except download.BadChecksum:
                 tries = plan['retried'].get(name, 0)
                 if tries >= 1:
-                    raise download.Failed('checksum', f'{name} did not match its published checksum twice. The file on the server may be damaged; try again later.')
+                    raise download.Failed('checksum', f'{name} matchede ikke sin udgivne kontrolsum to gange. Filen på serveren kan være beskadiget. Prøv igen senere.')
                 plan['retried'][name] = tries + 1
                 print(f'setup: {name} failed its checksum; downloading it once more', flush=True)
 
@@ -936,7 +936,7 @@ class Setup:
             need = install.need_bytes(pack, None, set(plan['sources']))
             free, _ = hardware.disk_of(work.parent)
             if free < need:
-                raise download.Failed('no_space', f'{len(bad)} files need fetching again. That needs {_gb(need)} free, and the disk has {_gb(free)}.')
+                raise download.Failed('no_space', f'{len(bad)} filer skal hentes igen. Det kræver {_gb(need)} fri plads, og disken har {_gb(free)}.')
             with self.lock:
                 it['bytes_total'], it['bytes_done'] = pack['download_bytes'], 0
         staged = work / 'unpack'
@@ -951,13 +951,13 @@ class Setup:
         still = max(total - _tree_size(staged), 0)
         free, _ = hardware.disk_of(work)
         if free < still + 512 * 2 ** 20:
-            raise download.Failed('no_space', f'Unpacking needs {_gb(still)} free, and the disk has {_gb(free)}. Free some space, then try again.')
+            raise download.Failed('no_space', f'Udpakning skal bruge {_gb(still)} fri plads, og disken har {_gb(free)}. Frigør plads, og prøv igen.')
         for path, _ in got:
             lib = install.unpack(path, staged, pack['installed_bytes'], control, lambda d, t: tracker.progress(d, t, 'unpacking'))
         if pack.get('revision'):
             metadata = json.loads((lib / 'pack.json').read_text(encoding='utf-8'))
             if metadata.get('content_revision') != pack['revision']:
-                raise install.Refused('unpack', 'The library content version does not match this download.')
+                raise install.Refused('unpack', 'Bibliotekets indholdsversion passer ikke til denne hentning.')
         current = self.current_info() or {}
         if (not plan.get('repair') and not plan.get('map') and Path(plan['target']) == self.current and current.get('pack') == pack['id']
                 and current.get('map') not in (None, 'base')):
@@ -984,7 +984,7 @@ class Setup:
         for path, _ in got:
             lib = install.unpack(path, staged, mp['installed_bytes'], control, lambda d, t: tracker.progress(d, t, 'unpacking'), allowed=install.map_member)
         if install.map_name(lib) != mp['id']:
-            raise install.Refused('unpack', f'The map file says it is {install.map_name(lib)}, not {mp["id"]}.')
+            raise install.Refused('unpack', f'Kortfilen siger, at den er {install.map_name(lib)}, ikke {mp["id"]}.')
         if plan['switch']:
             install.replace_map_in(work / 'unpack' / DATA_NAME, lib)
             shutil.rmtree(staged, ignore_errors=True)
@@ -1005,7 +1005,7 @@ class Setup:
         def verify(lib):
             path = lib / relative
             if not path.is_file() or path.stat().st_size != entry['installed_bytes']:
-                raise install.Refused('unpack', 'The address index is missing or the wrong size.')
+                raise install.Refused('unpack', 'Adresseindekset mangler eller har den forkerte størrelse.')
 
         got = []
         offset = 0
@@ -1064,7 +1064,7 @@ class Setup:
             if plan['switch']:
                 lib = work / 'unpack' / DATA_NAME
                 if not install.is_library(lib):
-                    raise install.Refused('activate', 'The new library is not complete.')
+                    raise install.Refused('activate', 'Det nye bibliotek er ikke komplet.')
                 install.stage_switch(_pending_file(self.settings_dir), lib, plan['target'], plan.get('model_file'), model_sha256=plan.get('model_sha256'))
             elif plan.get('map_new'):
                 install.stage_switch(_pending_file(self.settings_dir), plan['map_new'], plan['target'], kind='map')
@@ -1256,7 +1256,7 @@ def _send_json(h, obj, status=200):
 def handle(h, method, path):
     """Answers one /api/setup/ request on a BaseHTTPRequestHandler h."""
     if h.client_address[0] not in ('127.0.0.1', '::1', '::ffff:127.0.0.1'):
-        return _send_json(h, {'error': 'Setup is only open on this computer.'}, 403)
+        return _send_json(h, {'error': 'Opsætningen er kun åben på denne computer.'}, 403)
     name = path[len('/api/setup/'):].strip('/')
     fn = ROUTES.get(('GET' if method == 'HEAD' else method, name))
     if not fn:
@@ -1276,7 +1276,7 @@ def handle(h, method, path):
         out = fn(SETUP or _default(), body)
     except Exception as e:
         traceback.print_exc()
-        return _send_json(h, {'error': f'Setup stopped on an internal error ({type(e).__name__}).'}, 500)
+        return _send_json(h, {'error': f'Opsætningen stoppede på en intern fejl ({type(e).__name__}).'}, 500)
     status = 200
     if isinstance(out, dict) and out.get('error') and 'code' in out:
         status = 409 if out['code'] in ('busy', 'not_done') else 400 if out['code'] != 'no_space' else 507

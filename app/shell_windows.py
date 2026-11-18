@@ -67,8 +67,8 @@ TOO_BIG = 'A page was using too much memory, so it was closed.'
 BROWSER_ARGS = ('--disable-features=ElasticOverscroll,msOneAuthWAM,msForceOneAuthWAM --disable-background-networking --disable-component-update '
                 '--disable-domain-reliability --no-pings --host-resolver-rules="MAP * ^NOTFOUND" '    # ^NOTFOUND: Chromium's token since 120 (audit X1)
                 '--webrtc-ip-handling-policy=disable_non_proxied_udp --force-webrtc-ip-handling-policy=disable_non_proxied_udp')   # both layers' spelling
-NO_RUNTIME = ('ARK needs the Microsoft Edge WebView2 Runtime, and it was not found on this computer.\n\n'
-              'Windows 11 normally includes it. Install "WebView2 Runtime" from Microsoft, then start ARK again.')
+NO_RUNTIME = ('ARK skal bruge Microsoft Edge WebView2 Runtime, og den blev ikke fundet på denne computer.\n\n'
+              'Windows 11 har den som regel med. Installer "WebView2 Runtime" fra Microsoft, og start ARK igen.')
 BLOCKED_SCHEMES = ('http', 'https', 'ws', 'wss', 'ftp')
 # All a right-click offers. Anything else in the runtime's menu, now or after an update, goes: its Share panel posts to other programs and makes the runtime write a crash report.
 MENU_KEEP = {'cut', 'copy', 'paste', 'pasteAndMatchStyle', 'selectAll', 'undo', 'redo', 'copyImage'}
@@ -419,14 +419,14 @@ def pick_folder(prompt, start, *, files=False):
     dialog = vp()
     if ctypes.windll.ole32.CoCreateInstance(ctypes.byref(_guid('{DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7}')), None, 1,    # CLSID_FileOpenDialog, CLSCTX_INPROC_SERVER
                                             ctypes.byref(_guid('{D57C7288-D4AD-4768-BE02-9D969532D960}')), ctypes.byref(dialog)) != 0:
-        raise OSError('Windows could not open its folder picker.')
+        raise OSError('Windows kunne ikke åbne mappevælgeren.')
     try:
         options = ctypes.c_uint32()
         _com(dialog, 10, ctypes.POINTER(ctypes.c_uint32))(ctypes.byref(options))                       # GetOptions
         pick_kind = 0x1000 if files else 0x20   # FILEMUSTEXIST or PICKFOLDERS
         _com(dialog, 9, ctypes.c_uint32)(options.value | pick_kind | 0x40 | 0x800 | 0x8)  # FORCEFILESYSTEM, PATHMUSTEXIST, NOCHANGEDIR
         _com(dialog, 17, wstr)(prompt)                                                                 # SetTitle
-        _com(dialog, 18, wstr)('Choose')                                                               # SetOkButtonLabel
+        _com(dialog, 18, wstr)('Vælg')                                                               # SetOkButtonLabel
         folder = vp()
         if ctypes.windll.shell32.SHCreateItemFromParsingName(wstr(str(start)), None, ctypes.byref(_guid('{43826D1E-E718-42EE-BC55-A1E261C37BFE}')),
                                                              ctypes.byref(folder)) == 0:
@@ -491,7 +491,7 @@ def choose_folder(title, text):
         buttons = F.FlowLayoutPanel()
         buttons.FlowDirection, buttons.AutoSize, buttons.Dock = F.FlowDirection.RightToLeft, True, F.DockStyle.Fill
         buttons.Margin = F.Padding(0)
-        for name, result in (('Quit', F.DialogResult.Cancel), ('Choose Folder…', F.DialogResult.OK)):
+        for name, result in (('Afslut', F.DialogResult.Cancel), ('Vælg mappe…', F.DialogResult.OK)):
             b = F.Button()
             b.Text, b.AutoSize, b.DialogResult = name, True, result
             b.MinimumSize, b.Padding, b.Margin = D.Size(S(96), S(30)), F.Padding(S(10), 0, S(10), 0), F.Padding(S(8), 0, 0, 0)
@@ -512,7 +512,7 @@ def choose_folder(title, text):
         form.HandleCreated += lambda s, a: caption(form.Handle.ToInt64(), light)
         if form.ShowDialog() != F.DialogResult.OK:
             return
-        chosen.append(pick_folder('Choose the folder called LastbookData', downloads()) or '')
+        chosen.append(pick_folder('Vælg mappen, der hedder LastbookData', downloads()) or '')
 
     thread = n.Threading.Thread(n.Threading.ThreadStart(body))   # WinForms and the picker need a single-threaded apartment
     thread.SetApartmentState(n.Threading.ApartmentState.STA)
@@ -562,7 +562,7 @@ def preflight():
         n = net()
     except Exception:
         traceback.print_exc()
-        return f'ARK could not load the files it needs to show its window.\n\nThey should be in {_lib_dir()}.'
+        return f'ARK kunne ikke indlæse de filer, den skal bruge for at vise vinduet.\n\nDe bør ligge i {_lib_dir()}.'
     try:
         version = n.Core.CoreWebView2Environment.GetAvailableBrowserVersionString()
     except Exception as e:
@@ -825,7 +825,7 @@ class Shell:
     def on_ready(self, sender, args):
         if not args.IsSuccess:
             print('WebView2 did not start:', args.InitializationException, flush=True)
-            message(NO_RUNTIME if 'NotFound' in str(type(args.InitializationException)) else f'ARK could not open its window.\n\n{args.InitializationException.Message}')
+            message(NO_RUNTIME if 'NotFound' in str(type(args.InitializationException)) else f'ARK kunne ikke åbne sit vindue.\n\n{args.InitializationException.Message}')
             self.form.Close()
             return
         Core = self.n.Core

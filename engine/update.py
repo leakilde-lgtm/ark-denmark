@@ -29,7 +29,7 @@ VER = re.compile(r'^\d{1,6}(\.\d{1,6}){0,3}$')    # Windows builds have 5 digits
 MAX_BODY = 4096
 WEBSITE = 'lastbook.org'
 
-OFFLINE = 'Lastbook could not reach the internet. Everything else in Lastbook still works without it; try again when you are online.'
+OFFLINE = 'ARK kunne ikke nå internettet. Alt andet i ARK virker stadig uden det. Prøv igen, når du er online.'
 
 
 def _ver(s):
@@ -143,7 +143,7 @@ class Updater:
 
     def check(self):
         if not self.key:
-            return {'error': 'Updates are for the Mac, Windows and Linux app.', 'code': 'unsupported'}
+            return {'error': 'Opdateringer er til appen på Mac, Windows og Linux.', 'code': 'unsupported'}
         if self.thread is not None and self.thread.is_alive():
             return self.state()
         self._set(state='checking')
@@ -156,19 +156,19 @@ class Updater:
             self._check()
         except Exception as e:
             traceback.print_exc()
-            self._set(state='error', code='internal', message=f'The check stopped on an internal error ({type(e).__name__}).')
+            self._set(state='error', code='internal', message=f'Tjekket stoppede på en intern fejl ({type(e).__name__}).')
 
     def _fetch(self):
         """(status, bytes) of the metadata through download.py. Raises download.Failed with code 'offline' when nothing answers."""
         if self.product and urllib.parse.urlsplit(self.url).port not in (None, 443):
-            raise download.Failed('network', 'Lastbook refused to check an address it does not know.')
+            raise download.Failed('network', 'ARK afviste at tjekke en adresse, den ikke kender.')
         try:
             conn, r, final = download._open(self.url, 0, None, self.allowed, self.context or download.tls_context(), 15)
         except download.Failed:
             raise
         except download.ssl.SSLCertVerificationError:
-            raise download.Failed('network', 'Lastbook could not confirm it was talking to the real download site, so it stopped. '
-                                             'A network that intercepts secure connections (some offices, hotels) can cause this.')
+            raise download.Failed('network', 'ARK kunne ikke bekræfte, at den talte med det rigtige downloadsted, så den stoppede. '
+                                             'Et netværk, der afbryder sikre forbindelser (nogle kontorer og hoteller), kan være årsagen.')
         except (OSError, ValueError, download.http.client.HTTPException):   # names through download.py: no network module here
             raise download.Failed('offline', OFFLINE)
         try:
@@ -187,23 +187,23 @@ class Updater:
         except download.Failed as f:
             return self._set(state='error', code=f.code, message=f.message)
         if status in (403, 404):
-            return self._set(state='not_published', message='No update information yet. Try again later.')
+            return self._set(state='not_published', message='Ingen opdateringsoplysninger endnu. Prøv igen senere.')
         if status != 200 or len(data) > MAX_BODY:
-            return self._set(state='error', code='server', message='The download site did not answer properly. Try again later.')
+            return self._set(state='error', code='server', message='Downloadstedet svarede ikke ordentligt. Prøv igen senere.')
         try:
             offer = validate(json.loads(data), self.key)
         except ValueError:
             offer = None
         if not offer and self.key == 'linux' and _has_no_entry(data, self.key):   # Linux is announced only once the site lists it
-            return self._set(state='not_published', message='No update information yet. Try again later.')
+            return self._set(state='not_published', message='Ingen opdateringsoplysninger endnu. Prøv igen senere.')
         if not offer:
-            return self._set(state='error', code='bad_info', message='The update information on the download site could not be read. Try again later.')
+            return self._set(state='error', code='bad_info', message='Opdateringsoplysningerne på downloadstedet kunne ikke læses. Prøv igen senere.')
         mine = _ver(self.version or '')
         if mine and _ver(offer['version']) <= mine:
             return self._set(state='up_to_date', latest=offer['version'])
         if offer['min_os'] and _ver(os_version()) and _ver(os_version()) < _ver(offer['min_os']):
             return self._set(state='too_old_os', version=offer['version'],
-                             message=f"Version {offer['version']} needs {OS_NAMES.get(self.key, self.key)} {offer['min_os']} or later.")
+                             message=f"Version {offer['version']} kræver {OS_NAMES.get(self.key, self.key)} {offer['min_os']} eller nyere.")
         self._set(state='available', version=offer['version'])
 
 
@@ -227,7 +227,7 @@ def handle(h, method, path):
     """Answers one /api/update/ request on a BaseHTTPRequestHandler h. This computer only."""
     from engine.setup.api import _send_json
     if h.client_address[0] not in ('127.0.0.1', '::1', '::ffff:127.0.0.1'):
-        return _send_json(h, {'error': 'Updates are only open on this computer.'}, 403)
+        return _send_json(h, {'error': 'Opdateringer er kun åbne på denne computer.'}, 403)
     fn = ROUTES.get(('GET' if method == 'HEAD' else method, path[len('/api/update/'):].strip('/')))
     if not fn:
         return _send_json(h, {'error': 'not found'}, 404)
@@ -242,5 +242,5 @@ def handle(h, method, path):
         out = fn(updater())
     except Exception as e:
         traceback.print_exc()
-        return _send_json(h, {'error': f'The check stopped on an internal error ({type(e).__name__}).'}, 500)
+        return _send_json(h, {'error': f'Tjekket stoppede på en intern fejl ({type(e).__name__}).'}, 500)
     return _send_json(h, out)

@@ -2,21 +2,21 @@
 /* "Ask the library" — chat with the local model, grounded in the library. Conversations stay on this device only. */
 const Chat = (() => {
   const STARTERS = [
-    ['water', 'The tap water is off. How do I make water safe to drink?'],
-    ['hurt', 'Someone has a deep cut that won’t stop bleeding. What do I do?'],
-    ['power', 'How do I run a generator safely during a power outage?'],
-    ['food', 'The fridge has been off for 6 hours. What food is still safe?'],
-    ['sanitation', 'The toilets don’t work. How do we make an emergency toilet?'],
-    ['comms', 'Phones are down. How can our household stay in contact?'],
-    ['grow', 'What vegetables can I plant this month?'],
-    ['repair', 'How do I change the oil on a Honda EU2200i generator?'],
+    ['water', 'Vandet fra hanen er væk. Hvordan gør jeg vand sikkert at drikke?'],
+    ['hurt', 'Nogen har et dybt sår, der ikke holder op med at bløde. Hvad gør jeg?'],
+    ['power', 'Hvordan bruger jeg en generator sikkert under et strømsvigt?'],
+    ['food', 'Køleskabet har været slukket i 6 timer. Hvilken mad er stadig sikker?'],
+    ['sanitation', 'Toiletterne virker ikke. Hvordan laver vi et nødtoilet?'],
+    ['comms', 'Telefonerne er nede. Hvordan holder vores husstand kontakt?'],
+    ['grow', 'Hvilke grøntsager kan jeg plante i denne måned?'],
+    ['repair', 'Hvordan skifter jeg olien på en Honda EU2200i-generator?'],
   ];
-  const ABOUT_STARTERS = { doc: ['Explain this page in simple words', 'What are the warnings on this page?', 'Is there a video that shows this?'],
-    video: ['Summarise what this video shows', 'What safety points does this video make?', 'Find a manual page that covers the same thing'],
-    topic: ['What should I do first?', 'What are the most important warnings?', 'Which video should I watch first?'] };
-  const STATES = { starting: 'Starting the local AI…', thinking: 'Thinking…', searching: 'Searching the library…', reading: 'Reading the pages it found…', writing: 'Writing the answer…' };
+  const ABOUT_STARTERS = { doc: ['Forklar denne side med enkle ord', 'Hvilke advarsler står der på siden?', 'Findes der en video, der viser det?'],
+    video: ['Opsummer, hvad videoen viser', 'Hvilke sikkerhedspunkter nævner videoen?', 'Find en manuals side om det samme'],
+    topic: ['Hvad skal jeg gøre først?', 'Hvad er de vigtigste advarsler?', 'Hvilken video skal jeg se først?'] };
+  const STATES = { starting: 'Starter den lokale AI…', thinking: 'Tænker…', searching: 'Søger i biblioteket…', reading: 'Læser de sider, den fandt…', writing: 'Skriver svaret…' };
   // Where an answer is: search, then read, then write (none yet while the local AI starts). A later round can search again, so a step can light up a second time.
-  const STAGES = ['Search', 'Read', 'Write'], STAGE_AT = { starting: -1, thinking: 0, searching: 0, reading: 1, writing: 2 };
+  const STAGES = ['Søg', 'Læs', 'Skriv'], STAGE_AT = { starting: -1, thinking: 0, searching: 0, reading: 1, writing: 2 };
   function progress(m) {
     const at = STAGE_AT[m.state] ?? 0, pct = m.state === 'starting' && m.pct ? Math.max(0, Math.min(100, +m.pct || 0)) : null;
     const stages = STAGES.map((t, i) => `<li class="${i < at ? 'done' : i === at ? 'now' : ''}">${t}</li>`).join('');
@@ -46,36 +46,36 @@ const Chat = (() => {
     if (id && !cur) { swap('#/ask'); return }
     const about = q.get('about');
     aboutCtx = !cur && about ? await describe(about) : (cur && cur.about ? cur.aboutInfo : null);
-    document.title = (cur ? cur.title : 'Chat') + ' · ARK';
-    $('#tbTitle').textContent = cur ? cur.title : 'Chat';
+    document.title = (cur ? cur.title : 'Samtale') + ' · ARK';
+    $('#tbTitle').textContent = cur ? cur.title : 'Samtale';
     main.innerHTML = `<div class="chat">
-      <aside class="chat-side" id="chatSide" aria-label="Conversations">
-        <div class="cs-head"><b>Chats</b><button class="iconbtn" id="closeSide" aria-label="Close chat list">${ico('back')}</button></div>
-        <a class="btn plain" href="#/ask" id="newChat2">${ico('ask')}New chat</a>
+      <aside class="chat-side" id="chatSide" aria-label="Samtaler">
+        <div class="cs-head"><b>Samtaler</b><button class="iconbtn" id="closeSide" aria-label="Luk samtalelisten">${ico('back')}</button></div>
+        <a class="btn plain" href="#/ask" id="newChat2">${ico('ask')}Ny samtale</a>
         <ul class="cs-list" id="csList"></ul>
         <div class="cs-privacy">
-          <label><input type="checkbox" id="keepChats" ${keep() ? 'checked' : ''}> Keep chat history on this device</label>
-          <p class="small muted">Chats stay on this device. Nothing is sent anywhere except this computer’s own assistant.</p>
-          <button class="btn plain" id="clearChats">Delete all chats</button>
+          <label><input type="checkbox" id="keepChats" ${keep() ? 'checked' : ''}> Gem samtaler på denne enhed</label>
+          <p class="small muted">Samtaler bliver på denne enhed. Intet sendes andre steder end til computerens egen assistent.</p>
+          <button class="btn plain" id="clearChats">Slet alle samtaler</button>
         </div>
       </aside>
       <section class="chat-main">
         <div class="chat-top">
-          <button class="btn plain chat-histbtn" id="openSide" aria-label="Show chats">${ico("clock")}<span>Chats</span></button>
+          <button class="btn plain chat-histbtn" id="openSide" aria-label="Vis samtaler">${ico("clock")}<span>Samtaler</span></button>
           <div class="chat-status" id="chatStatus" aria-live="polite"></div>
-          <a class="btn plain" href="#/ask" id="newChat" aria-label="New chat">${ico('ask')}<span>New</span></a>
+          <a class="btn plain" href="#/ask" id="newChat" aria-label="Ny samtale">${ico('ask')}<span>Ny</span></a>
         </div>
         ${q.get('from') && !cur ? `<div style="margin:2px 0 8px">${backButton(q.get('from'))}</div>` : ''}
         <div class="ai-setup" id="aiSetup" hidden></div>
-        <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="Conversation"></div>
+        <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="Samtale"></div>
         <form class="composer" id="composer">
           <div class="ctxchip" id="ctxChip" hidden></div>
           <div class="comp-row">
-            <label class="sr" for="chatIn">Your question</label>
-            <textarea id="chatIn" rows="1" placeholder="Ask a question…" enterkeyhint="send"></textarea>
+            <label class="sr" for="chatIn">Dit spørgsmål</label>
+            <textarea id="chatIn" rows="1" placeholder="Stil et spørgsmål…" enterkeyhint="send"></textarea>
             <button class="sendbtn" id="sendBtn" aria-label="Send">${ico("up")}</button>
           </div>
-          <p class="comp-note">Answers come from the library on this computer and can be wrong. Check the linked pages; get trained help for anything serious.</p>
+          <p class="comp-note">Svarene kommer fra biblioteket på denne computer og kan være forkerte. Tjek de linkede sider. Få uddannet hjælp til noget alvorligt.</p>
         </form>
       </section></div>`;
     renderSide(); renderCtx(); renderLog();
@@ -90,9 +90,9 @@ const Chat = (() => {
     $('#closeSide').onclick = () => $('#chatSide').classList.remove('open');
     $('#keepChats').onchange = e => {
       try { localStorage.setItem('sg.chatKeep', e.target.checked ? 'yes' : 'no') } catch { }
-      if (!e.target.checked) { try { localStorage.removeItem('sg.chats') } catch { } toast('Chats will be forgotten when you close this page') } else { persist(); toast('Chats will be kept on this device') }
+      if (!e.target.checked) { try { localStorage.removeItem('sg.chats') } catch { } toast('Samtaler glemmes, når du lukker siden') } else { persist(); toast('Samtaler gemmes på denne enhed') }
     };
-    $('#clearChats').onclick = () => { if (!confirm('Delete all chats on this device?')) return; Object.values(live).forEach(l => l.abort && l.abort()); chats = []; try { localStorage.removeItem('sg.chats') } catch { } location.hash = '#/ask' };
+    $('#clearChats').onclick = () => { if (!confirm('Slet alle samtaler på denne enhed?')) return; Object.values(live).forEach(l => l.abort && l.abort()); chats = []; try { localStorage.removeItem('sg.chats') } catch { } location.hash = '#/ask' };
     leaving = () => { document.removeEventListener('keydown', escStop) };
     document.addEventListener('keydown', escStop);
     statusLine();
@@ -109,31 +109,31 @@ const Chat = (() => {
   function localLine(l) {
     const gb = n => (n / 1e9).toFixed(0) + ' GB';
     return ({
-      ready: [true, 'Local AI ready'],
-      stopped: [true, 'Local AI ready · it starts when you ask'],
-      loading: [true, `Starting the local AI${l.pct ? ' ' + l.pct + '%' : '…'}`],
-      checking: [false, `Checking the local AI file${l.pct != null ? ' ' + l.pct + '%' : '…'}`],
-      measuring: [false, 'Checking this computer’s memory…'],
-      absent: [false, 'No local AI added'],
-      wrong: [false, l.message || 'The local AI file is not the right one.'],
-      too_big: [false, l.message || `The local AI needs about ${gb(l.needs_bytes || 0)} of memory.`],
-      off: [false, 'Local AI is off'],
-      error: [false, l.message || 'The local AI could not start.'],
-    })[l.state] || [false, l.message || 'Local AI unavailable'];
+      ready: [true, 'Lokal AI klar'],
+      stopped: [true, 'Lokal AI klar · den starter, når du spørger'],
+      loading: [true, `Starter den lokale AI${l.pct ? ' ' + l.pct + '%' : '…'}`],
+      checking: [false, `Tjekker den lokale AI-fil${l.pct != null ? ' ' + l.pct + '%' : '…'}`],
+      measuring: [false, 'Tjekker computerens hukommelse…'],
+      absent: [false, 'Ingen lokal AI tilføjet'],
+      wrong: [false, l.message || 'Den lokale AI-fil er ikke den rigtige.'],
+      too_big: [false, l.message || `Den lokale AI skal bruge ca. ${gb(l.needs_bytes || 0)} hukommelse.`],
+      off: [false, 'Lokal AI er slået fra'],
+      error: [false, l.message || 'Den lokale AI kunne ikke starte.'],
+    })[l.state] || [false, l.message || 'Lokal AI er ikke tilgængelig'];
   }
   let polling = null;
   async function statusLine() {
     const s = await getStatus(), el = $('#chatStatus'); if (!el) return;
     const ix = s.index || {}, l = s.local;
-    const still = ix.state === 'indexing' || ix.state === 'indexing (other process)' ? ` · <span class="muted">still indexing (${(ix.chunks || 0).toLocaleString()} passages so far)</span>` : '';
+    const still = ix.state === 'indexing' || ix.state === 'indexing (other process)' ? ` · <span class="muted">indekserer stadig (${(ix.chunks || 0).toLocaleString()} passager indtil nu)</span>` : '';
     if (l && (/ready|stopped|loading/.test(l.state) || !s.online)) {
       const [ok, line] = localLine(l);
-      el.innerHTML = `<span class="${ok ? 'dotok' : 'dotoff'}"></span><span>${esc(line)}${ok ? still : '<span class="long"> — search and reading still work</span>'}</span>`;
+      el.innerHTML = `<span class="${ok ? 'dotok' : 'dotoff'}"></span><span>${esc(line)}${ok ? still : '<span class="long"> — søgning og læsning virker stadig</span>'}</span>`;
     } else {
-      el.innerHTML = s.online ? `<span class="dotok"></span>Local assistant ready${still}`
-        : `<span class="dotoff"></span><span>Assistant offline<span class="long"> — search and browsing still work</span></span>`;
+      el.innerHTML = s.online ? `<span class="dotok"></span>Lokal assistent klar${still}`
+        : `<span class="dotoff"></span><span>Assistenten er offline<span class="long"> — søgning og gennemsyn virker stadig</span></span>`;
     }
-    const sb = $('#sendBtn'); if (sb) sb.title = s.online ? 'Send' : 'The assistant is offline; you will get matching pages instead';
+    const sb = $('#sendBtn'); if (sb) sb.title = s.online ? 'Send' : 'Assistenten er offline. Du får matchende sider i stedet';
     setupCard(s);
     clearTimeout(polling);
     if (l && /checking|measuring|loading/.test(l.state) && $('#chatStatus')) polling = setTimeout(statusLine, 1000);
@@ -145,11 +145,11 @@ const Chat = (() => {
     box.hidden = !show;
     if (!show) return;
     box.innerHTML = l.state === 'off'
-      ? `<p>The local AI is turned off.</p><div class="row"><button class="btn" data-ai="on">Turn on</button></div>`
-      : l.state === 'error' ? `<p>${esc(l.message || 'The local AI could not start.')}</p><div class="row"><button class="btn" data-ai="rescan">Look again</button></div>`
-      : `<p><b>Add the local AI to get written answers.</b> It is about 17 GB, and runs on this computer only.</p>
-         <div class="row"><a class="btn" href="/ui/setup.html#manage">Add the local AI</a><button class="btn plain" data-ai="rescan">Look again</button></div>
-         <p class="small">Already downloaded <code>${esc(l.file)}</code>? Put it in your <b>LastbookData</b> folder or Downloads, then Look again.</p>`;
+      ? `<p>Den lokale AI er slået fra.</p><div class="row"><button class="btn" data-ai="on">Slå til</button></div>`
+      : l.state === 'error' ? `<p>${esc(l.message || 'Den lokale AI kunne ikke starte.')}</p><div class="row"><button class="btn" data-ai="rescan">Se igen</button></div>`
+      : `<p><b>Tilføj den lokale AI for at få skriftlige svar.</b> Den fylder ca. 17 GB og kører kun på denne computer.</p>
+         <div class="row"><a class="btn" href="/ui/setup.html#manage">Tilføj den lokale AI</a><button class="btn plain" data-ai="rescan">Se igen</button></div>
+         <p class="small">Har du allerede hentet <code>${esc(l.file)}</code>? Læg den i mappen <b>LastbookData</b> eller i Overførsler, og vælg Se igen.</p>`;
     $$('[data-ai]', box).forEach(b => b.onclick = async () => {
       b.disabled = true;
       try { await fetch('/api/assistant/local', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: b.dataset.ai }) }) } catch { }
@@ -161,7 +161,7 @@ const Chat = (() => {
     try {
       if (kind === 'topic') { const t = (await topics()).find(x => x.id === id); return { about, label: t ? (SHORT[id] || t.title) : id, sub: 'Guide', kind } }
       const d = await api('/api/doc/' + encodeURIComponent(id));
-      return { about, kind, label: d.title, sub: kind === 'video' ? (n ? 'Video at ' + clock(+n) : 'Video') : 'Page ' + (n || 1), href: kind === 'video' ? `#/watch/${encodeURIComponent(id)}${n ? '?t=' + n : ''}` : `#/read/${encodeURIComponent(id)}?p=${n || 1}` };
+      return { about, kind, label: d.title, sub: kind === 'video' ? (n ? 'Video ved ' + clock(+n) : 'Video') : 'Side ' + (n || 1), href: kind === 'video' ? `#/watch/${encodeURIComponent(id)}${n ? '?t=' + n : ''}` : `#/read/${encodeURIComponent(id)}?p=${n || 1}` };
     } catch { return null }
   }
   function renderCtx() {
@@ -169,13 +169,13 @@ const Chat = (() => {
     const a = aboutCtx;
     if (!a) { el.hidden = true; return }
     el.hidden = false;
-    el.innerHTML = `${ico(a.kind === 'video' ? 'video' : a.kind === 'topic' ? 'book' : 'page')}<span>Asking about: <b>${esc(a.label)}</b> <span class="muted">${esc(a.sub || '')}</span></span>${cur && cur.messages.length ? '' : '<button type="button" aria-label="Don’t use this as context" id="ctxX">×</button>'}`;
+    el.innerHTML = `${ico(a.kind === 'video' ? 'video' : a.kind === 'topic' ? 'book' : 'page')}<span>Spørger om: <b>${esc(a.label)}</b> <span class="muted">${esc(a.sub || '')}</span></span>${cur && cur.messages.length ? '' : '<button type="button" aria-label="Brug ikke dette som kontekst" id="ctxX">×</button>'}`;
     const x = $('#ctxX'); if (x) x.onclick = () => { aboutCtx = null; renderCtx(); renderLog() };
   }
   function renderSide() {
     const el = $('#csList'); if (!el) return;
-    el.innerHTML = chats.length ? chats.map(c => `<li><a href="#/ask/${c.id}" ${cur && cur.id === c.id ? 'aria-current="page"' : ''}><b>${esc(c.title)}</b><small>${new Date(c.updated).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${c.messages.filter(m => m.role === 'user').length} question${c.messages.filter(m => m.role === 'user').length > 1 ? 's' : ''}</small></a><button class="iconbtn" data-del="${c.id}" aria-label="Delete this chat">×</button></li>`).join('')
-      : '<li class="muted small" style="padding:8px 4px">No chats yet.</li>';
+    el.innerHTML = chats.length ? chats.map(c => { const n = c.messages.filter(m => m.role === 'user').length; return `<li><a href="#/ask/${c.id}" ${cur && cur.id === c.id ? 'aria-current="page"' : ''}><b>${esc(c.title)}</b><small>${new Date(c.updated).toLocaleDateString('da-DK', { month: 'short', day: 'numeric' })} · ${n} spørgsmål</small></a><button class="iconbtn" data-del="${c.id}" aria-label="Slet denne samtale">×</button></li>` }).join('')
+      : '<li class="muted small" style="padding:8px 4px">Ingen samtaler endnu.</li>';
     const clr = $('#clearChats'); if (clr) clr.hidden = !chats.length;   // nothing to delete
     $$('[data-del]', el).forEach(b => b.onclick = () => { const id = b.dataset.del; live[id]?.abort?.(); chats = chats.filter(c => c.id !== id); persist(); if (cur && cur.id === id) location.hash = '#/ask'; else renderSide() });
     // the list fades at an edge with more chats past it, so a row cut off there reads as more to scroll to
@@ -191,10 +191,10 @@ const Chat = (() => {
       const st = aboutCtx ? ABOUT_STARTERS[aboutCtx.kind] || [] : null;
       log.innerHTML = `<div class="chat-empty">
         <div class="ce-mark">${ico('ask')}</div>
-        <h1>Chat</h1>
-        <p class="lead">Answers are built only from the manuals, guides and video transcripts on this computer — with the exact page or video moment for each point.</p>
+        <h1>Samtale</h1>
+        <p class="lead">Svarene bygges kun af manualer, guider og videoudskrifter på denne computer, med den præcise side eller det præcise sted i videoen for hvert punkt.</p>
         <div class="starters">${(st ? st.map(t => ['ask', t]) : STARTERS).map(([i, t]) => `<button class="starter" ${tcStyle(i)} data-start="${esc(t)}"><span class="ico">${ico(i)}</span><span>${esc(t)}</span></button>`).join('')}</div>
-        <p class="small muted" style="margin-top:18px">It reads text only: it can’t see inside videos without captions, scanned pages without text, or raw map files. It tells you when the library has nothing on a question.</p></div>`;
+        <p class="small muted" style="margin-top:18px">Den læser kun tekst. Den kan ikke se ind i videoer uden undertekster, scannede sider uden tekst eller rå kortfiler. Den siger det, når biblioteket ikke har noget om et spørgsmål.</p></div>`;
       $$('[data-start]', log).forEach(b => b.onclick = () => send(b.dataset.start));
       fitEmpty();
       return;
@@ -224,21 +224,21 @@ const Chat = (() => {
     const steps = (m.steps || []).map(s => `<li>${stepText(s)}</li>`).join('');
     const found = m.sources || [];
     let h = '';
-    if (running) h += `<div class="working"><b>${esc(STATES[m.state] || 'Working…')}${m.state === 'starting' && m.pct ? ` ${m.pct}%` : ''}</b>${progress(m)}${steps ? `<ul class="steps">${steps}</ul>` : ''}</div>`;
-    if (m.error) h += `<div class="ans-error">${ico('warn')}<div><b>${esc(m.error)}</b>${m.offline ? '<p>You can keep browsing and searching. Here are the pages that best match your question:</p>' : ''}</div></div>`;
+    if (running) h += `<div class="working"><b>${esc(STATES[m.state] || 'Arbejder…')}${m.state === 'starting' && m.pct ? ` ${m.pct}%` : ''}</b>${progress(m)}${steps ? `<ul class="steps">${steps}</ul>` : ''}</div>`;
+    if (m.error) h += `<div class="ans-error">${ico('warn')}<div><b>${esc(m.error)}</b>${m.offline ? '<p>Du kan stadig bladre og søge. Her er de sider, der passer bedst til dit spørgsmål:</p>' : ''}</div></div>`;
     if (m.content) h += `<div class="answer">${md(m.content, m)}</div>`;
-    if (running && found.length) h += `<div class="prefound"><p class="small muted">Pages found so far — you can open them while the answer is written:</p>${srcCards(found.slice(0, 6), true)}</div>`;
+    if (running && found.length) h += `<div class="prefound"><p class="small muted">Sider fundet indtil nu. Du kan åbne dem, mens svaret skrives:</p>${srcCards(found.slice(0, 6), true)}</div>`;
     if (m.fallback) h += srcCards(m.fallback, true);
     if (!running && m.content) {
       const cited = m.cited || [];
-      if ((m.invalid || []).length) h += `<p class="small" style="color:var(--stop)">The model referred to sources that don’t exist (${m.invalid.join(', ')}); those markers were removed.</p>`;
-      h += `<div class="legend small"><span><span class="lg-c">1</span> linked to a page or video</span><span><span class="lg-u">dotted</span> the model’s own wording, not linked to a source</span></div>`;
-      if (cited.length) h += `<h3 class="srch">Sources (${cited.length})</h3>${srcCards(cited, false)}`;
-      else h += `<p class="notice small">This answer has no linked sources. Treat it as unverified.</p>`;
+      if ((m.invalid || []).length) h += `<p class="small" style="color:var(--stop)">Modellen henviste til kilder, der ikke findes (${m.invalid.join(', ')}). De markeringer er fjernet.</p>`;
+      h += `<div class="legend small"><span><span class="lg-c">1</span> knyttet til en side eller video</span><span><span class="lg-u">prikket</span> modellens egen formulering, ikke knyttet til en kilde</span></div>`;
+      if (cited.length) h += `<h3 class="srch">Kilder (${cited.length})</h3>${srcCards(cited, false)}`;
+      else h += `<p class="notice small">Svaret har ingen tilknyttede kilder. Betragt det som ubekræftet.</p>`;
       const other = (m.consulted || []).filter(s => s.kind !== 'place');
-      if (other.length) h += `<details class="also"><summary>Also looked at (${other.length}, not used)</summary>${srcCards(other.slice(0, 10), true)}</details>`;
-      if ((m.steps || []).length) h += `<details class="also"><summary>How it searched (${m.steps.length} ${m.steps.length === 1 ? 'step' : 'steps'}${m.latency ? `, ${m.latency.total_s}s` : ''})</summary><ul class="steps">${steps}</ul></details>`;
-      h += `<div class="ans-actions"><button class="btn plain" data-act="copy" data-i="${i}">Copy</button><button class="btn plain" data-act="save" data-i="${i}">${ico('save')}Save answer</button><button class="btn plain" data-act="export">Export chat</button>${i === cur.messages.length - 1 ? `<button class="btn plain" data-act="retry">Ask again</button>` : ''}</div>`;
+      if (other.length) h += `<details class="also"><summary>Også set på (${other.length}, ikke brugt)</summary>${srcCards(other.slice(0, 10), true)}</details>`;
+      if ((m.steps || []).length) h += `<details class="also"><summary>Sådan søgte den (${m.steps.length} ${m.steps.length === 1 ? 'trin' : 'trin'}${m.latency ? `, ${m.latency.total_s}s` : ''})</summary><ul class="steps">${steps}</ul></details>`;
+      h += `<div class="ans-actions"><button class="btn plain" data-act="copy" data-i="${i}">Kopiér</button><button class="btn plain" data-act="save" data-i="${i}">${ico('save')}Gem svar</button><button class="btn plain" data-act="export">Eksportér samtale</button>${i === cur.messages.length - 1 ? `<button class="btn plain" data-act="retry">Spørg igen</button>` : ''}</div>`;
     }
     return h;
   }
@@ -247,19 +247,19 @@ const Chat = (() => {
     const plain = v => typeof v === 'string' || typeof v === 'number' ? v : '';
     const raw = s.args && typeof s.args === 'object' ? s.args : {}, r = s.summary || {};
     const a = { query: plain(raw.query), kind: plain(raw.kind), doc_id: plain(raw.doc_id), page: plain(raw.page), pages: raw.pages };
-    if (s.name === 'search_library') return `Searched “${esc(a.query || '')}”${a.kind && a.kind !== 'any' ? ' (' + esc(a.kind) + 's)' : ''} — ${r.count ?? '…'} passage${r.count === 1 ? '' : 's'}`;
+    if (s.name === 'search_library') return `Søgte efter “${esc(a.query || '')}”${a.kind && a.kind !== 'any' ? ' (' + esc(a.kind) + ')' : ''} — ${r.count ?? '…'} passage${r.count === 1 ? '' : 'r'}`;
     if (s.name === 'read_pages') {
       const pages = (Array.isArray(a.pages) ? a.pages : [a.pages]).filter(p => typeof p === 'number' || typeof p === 'string');
-      return r.error ? 'Tried to read an unknown document' : `Read ${esc(r.title || a.doc_id)}, page${pages.length > 1 ? 's' : ''} ${esc(pages.join(', '))}`;
+      return r.error ? 'Forsøgte at læse et ukendt dokument' : `Læste ${esc(r.title || a.doc_id)}, side ${esc(pages.join(', '))}`;
     }
-    if (s.name === 'view_page') return r.error ? 'Couldn’t view that page' : `Looked at the picture of ${esc(r.title || '')}, page ${esc(a.page)}`;
-    if (s.name === 'get_timed_transcript') return r.error ? `No transcript for ${esc(r.title || 'that video')}` : `Read the transcript of ${esc(r.title || '')}`;
-    if (s.name === 'lookup_place') return `Looked up “${esc(a.query || '')}” on the offline map`;
-    if (s.name === 'found') return `Matched ${s.count} passage${s.count === 1 ? '' : 's'} for your question`;
+    if (s.name === 'view_page') return r.error ? 'Kunne ikke se den side' : `Så på billedet af ${esc(r.title || '')}, side ${esc(a.page)}`;
+    if (s.name === 'get_timed_transcript') return r.error ? `Ingen udskrift til ${esc(r.title || 'den video')}` : `Læste udskriften af ${esc(r.title || '')}`;
+    if (s.name === 'lookup_place') return `Slog “${esc(a.query || '')}” op på kortet uden internet`;
+    if (s.name === 'found') return `Fandt ${s.count} passage${s.count === 1 ? '' : 'r'} til dit spørgsmål`;
     return esc(s.name);
   }
   function srcHref(s) {
-    if (s.kind === 'place') return `#/map?lat=${s.lat}&lon=${s.lon}&z=16&pin=${encodeURIComponent(s.title || s.name || 'Place from the answer')}`;
+    if (s.kind === 'place') return `#/map?lat=${s.lat}&lon=${s.lon}&z=16&pin=${encodeURIComponent(s.title || s.name || 'Sted fra svaret')}`;
     if (s.kind === 'video') return `#/watch/${encodeURIComponent(s.doc_id)}?${s.t != null ? 't=' + Math.floor(s.t) + '&' : ''}from=${encodeURIComponent(here())}`;
     return `#/read/${encodeURIComponent(s.doc_id)}?${s.page ? 'p=' + s.page + '&' : ''}from=${encodeURIComponent(here())}`;
   }
@@ -267,20 +267,20 @@ const Chat = (() => {
     return `<div class="srccards ${compact ? 'compact' : ''}">${list.map(s => {
       let pv;
       if (s.kind === 'video') pv = `<span class="pv v">${s.thumb ? `<img loading="lazy" alt="" src="${fileUrl(s.thumb)}">` : ''}<span class="pg">${s.t != null ? clock(s.t) : 'video'}</span></span>`;
-      else if (s.kind === 'pdf' && s.page) pv = `<span class="pv"><img loading="lazy" alt="" src="/api/page/${encodeURIComponent(s.doc_id)}/${s.page}.png?w=300" onerror="this.remove()"><span class="pg">p. ${s.page}</span></span>`;
+      else if (s.kind === 'pdf' && s.page) pv = `<span class="pv"><img loading="lazy" alt="" src="/api/page/${encodeURIComponent(s.doc_id)}/${s.page}.png?w=300" onerror="this.remove()"><span class="pg">s. ${s.page}</span></span>`;
       else pv = `<span class="pv w">${ico(s.kind === 'place' ? 'pin' : 'page')}</span>`;
-      const where = s.kind === 'video' ? (s.t != null ? 'at ' + clock(s.t) : '') : s.page ? `page ${s.page}${s.pages ? ' of ' + s.pages : ''}` : '';
+      const where = s.kind === 'video' ? (s.t != null ? 'ved ' + clock(s.t) : '') : s.page ? `side ${s.page}${s.pages ? ' af ' + s.pages : ''}` : '';
       return `<a class="srccard" href="${srcHref(s)}" id="src-${esc(s.key || '')}">${pv}<span class="sc-body">${s.key ? `<span class="sc-key">${esc(s.key.replace(/^S/, ''))}</span>` : ''}<b>${esc(s.title)}</b>
         <small>${esc(s.publisher || '')}${s.year ? ' · ' + esc(s.year) : ''}${where ? ' · ' + where : ''}${s.trust ? ' · ' + esc(s.trust) : ''}</small>
         ${!compact && s.excerpt ? `<span class="sc-ex">“${esc(s.excerpt.slice(0, 220))}${s.excerpt.length > 220 ? '…' : ''}”</span>` : ''}
-        ${s.image ? '<span class="sc-tag">diagram viewed</span>' : ''}</span></a>`;
+        ${s.image ? '<span class="sc-tag">diagram set</span>' : ''}</span></a>`;
     }).join('')}</div>`;
   }
 
   /* markdown-lite with citation chips; sentences without a citation are marked as the model's own wording */
   function md(text, m) {
     const keys = new Set((m.cited || m.sources || []).map(s => s.key));
-    const cite = k => keys.has(k) || !m.cited ? `<a class="cite" href="#src-${k}" data-key="${k}" title="Source ${k}">${k.replace(/^S/, '')}</a>` : '';
+    const cite = k => keys.has(k) || !m.cited ? `<a class="cite" href="#src-${k}" data-key="${k}" title="Kilde ${k}">${k.replace(/^S/, '')}</a>` : '';
     const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|\W)\*(?!\s)(.+?)\*(?=\W|$)/g, '$1<em>$2</em>')
       .replace(/\[([SM]\d+)\]/g, (_, k) => cite(k));
     const lines = text.replace(/\r/g, '').split('\n');
@@ -288,7 +288,7 @@ const Chat = (() => {
     const close = () => { if (list) { out += `</${list}>`; list = null } };
     const mark = raw => {  // wrap sentences that carry no citation (main sections only)
       if (section !== 'main' || m.running) return inline(raw);
-      return raw.split(/(?<=[.!?])\s+(?=[A-Z(“"])/).map(sn => /\[[SM]\d+\]/.test(sn) || sn.replace(/\*|_/g, '').trim().length < 28 || /:$/.test(sn.trim()) ? inline(sn) : `<span class="uncited" title="Not linked to a source">${inline(sn)}</span>`).join(' ');
+      return raw.split(/(?<=[.!?])\s+(?=[A-Z(“"])/).map(sn => /\[[SM]\d+\]/.test(sn) || sn.replace(/\*|_/g, '').trim().length < 28 || /:$/.test(sn.trim()) ? inline(sn) : `<span class="uncited" title="Ikke knyttet til en kilde">${inline(sn)}</span>`).join(' ');
     };
     for (let ln of lines) {
       const t = ln.trim();
@@ -300,7 +300,7 @@ const Chat = (() => {
         close();
         if (out.includes('<div class="sec-')) out += '</div>';
         section = sec || (head ? 'main' : section);
-        if (sec) { out += `<div class="sec-${sec}"><h4>${sec === 'missing' ? 'Not found in the library' : sec === 'disagree' ? 'Sources disagree' : 'The model’s own reasoning — not from the library'}</h4>`; const rest = t.replace(/^[#*\s]*(not found in the library|sources disagree|my own reasoning \(not from the library\)|my own reasoning)[:*\s]*/i, ''); if (rest) out += `<p>${inline(rest)}</p>`; continue }
+        if (sec) { out += `<div class="sec-${sec}"><h4>${sec === 'missing' ? 'Ikke fundet i biblioteket' : sec === 'disagree' ? 'Kilderne er uenige' : 'Modellens egen begrundelse — ikke fra biblioteket'}</h4>`; const rest = t.replace(/^[#*\s]*(not found in the library|sources disagree|my own reasoning \(not from the library\)|my own reasoning)[:*\s]*/i, ''); if (rest) out += `<p>${inline(rest)}</p>`; continue }
         out += `<h4>${inline(hText.replace(/:$/, ''))}</h4>`; continue;
       }
       const ul = /^[-*•]\s+(.*)$/.exec(t), ol = /^(\d+)[.)]\s+(.*)$/.exec(t);
@@ -319,10 +319,10 @@ const Chat = (() => {
   function wire(el) {
     $$('[data-act]', el).forEach(b => b.onclick = () => {
       const i = +b.dataset.i, m = cur.messages[i];
-      if (b.dataset.act === 'copy') { navigator.clipboard?.writeText(plain(m)).then(() => toast('Copied'), () => toast('Couldn’t copy')) }
+      if (b.dataset.act === 'copy') { navigator.clipboard?.writeText(plain(m)).then(() => toast('Kopieret'), () => toast('Kunne ikke kopiere')) }
       if (b.dataset.act === 'save') {
         const q = cur.messages[i - 1]?.content || cur.title;
-        toggleSave({ key: `a:${cur.id}:${i}`, title: 'Answer: ' + q.slice(0, 80), href: '#/ask/' + cur.id, sub: `${(m.cited || []).length} sources · ${new Date().toLocaleDateString()}` }, null);
+        toggleSave({ key: `a:${cur.id}:${i}`, title: 'Svar: ' + q.slice(0, 80), href: '#/ask/' + cur.id, sub: `${(m.cited || []).length} kilder · ${new Date().toLocaleDateString('da-DK')}` }, null);
       }
       if (b.dataset.act === 'export') exportChat(cur);
       if (b.dataset.act === 'retry') { const q = cur.messages[cur.messages.length - 2]?.content; cur.messages.splice(-2, 2); send(q) }
@@ -333,17 +333,17 @@ const Chat = (() => {
   function plain(m) {
     const map = Object.fromEntries((m.cited || []).map(s => [s.key, s]));
     let t = m.content.replace(/\[([SM]\d+)\]/g, (_, k) => map[k] ? `[${k.replace(/^S/, '')}]` : '');
-    if ((m.cited || []).length) t += '\n\nSources:\n' + m.cited.map(s => `[${s.key.replace(/^S/, '')}] ${s.title} — ${s.publisher || ''}${s.year ? ', ' + s.year : ''}${s.page ? ', page ' + s.page : ''}${s.t != null ? ', at ' + clock(s.t) : ''}  ${location.origin}/${srcHref(s).replace(/&?from=[^&]*/, '')}`).join('\n');
+    if ((m.cited || []).length) t += '\n\nKilder:\n' + m.cited.map(s => `[${s.key.replace(/^S/, '')}] ${s.title} — ${s.publisher || ''}${s.year ? ', ' + s.year : ''}${s.page ? ', side ' + s.page : ''}${s.t != null ? ', ved ' + clock(s.t) : ''}  ${location.origin}/${srcHref(s).replace(/&?from=[^&]*/, '')}`).join('\n');
     return t;
   }
   function exportChat(c) {
-    let md = `# ${c.title}\n\nExported from ARK (offline library) on ${new Date().toLocaleString()}.\nAnswers were written by a local AI model from the library's documents. Check the linked pages; get trained help for anything serious.\n`;
-    for (const m of c.messages) md += m.role === 'user' ? `\n## Question\n\n${m.content}\n` : `\n## Answer\n\n${m.content ? plain(m) : '(no answer: ' + (m.error || 'stopped') + ')'}\n`;
+    let md = `# ${c.title}\n\nEksporteret fra ARK (bibliotek uden internet) ${new Date().toLocaleString('da-DK')}.\nSvarene er skrevet af en lokal AI-model ud fra bibliotekets dokumenter. Tjek de linkede sider. Få uddannet hjælp til noget alvorligt.\n`;
+    for (const m of c.messages) md += m.role === 'user' ? `\n## Spørgsmål\n\n${m.content}\n` : `\n## Svar\n\n${m.content ? plain(m) : '(intet svar: ' + (m.error || 'stoppet') + ')'}\n`;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
     a.download = `survival-chat-${new Date().toISOString().slice(0, 10)}.md`;
     document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove() }, 500);
-    toast('Saved as a file on this device');
+    toast('Gemt som en fil på denne enhed');
   }
   // Earlier answers' [S#] keys only mean something inside their own turn; give the model readable references instead.
   function history_(c) {
@@ -377,7 +377,7 @@ const Chat = (() => {
       const st = await getStatus();
       if (!st.online) throw Object.assign(new Error('offline'), { offline: true, why: st.local && localLine(st.local)[1] });
       const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history_(c).slice(0, -1).concat([{ role: 'user', content: text }]), about: c.about }), signal: ctl.signal });
-      if (!r.ok || !r.body) throw new Error('The server refused the question (' + r.status + ').');
+      if (!r.ok || !r.body) throw new Error('Serveren afviste spørgsmålet (' + r.status + ').');
       const rd = r.body.getReader(), dec = new TextDecoder();
       let buf = '';
       for (;;) {
@@ -393,14 +393,14 @@ const Chat = (() => {
           redraw();
         }
       }
-      if (m.running && !m.content && !m.error) m.error = 'The answer stopped unexpectedly.';
+      if (m.running && !m.content && !m.error) m.error = 'Svaret stoppede uventet.';
     } catch (e) {
-      if (e.name === 'AbortError') { m.stopped = true; if (!m.content) m.error = 'Stopped.' }
-      else if (e.offline || /model_unavailable/.test(e.message)) { m.offline = true; m.error = e.why || 'The local assistant model isn’t running right now.'; await fallback(m, text) }
-      else m.error = e.message || 'Something went wrong.';
+      if (e.name === 'AbortError') { m.stopped = true; if (!m.content) m.error = 'Stoppet.' }
+      else if (e.offline || /model_unavailable/.test(e.message)) { m.offline = true; m.error = e.why || 'Den lokale assistentmodel kører ikke lige nu.'; await fallback(m, text) }
+      else m.error = e.message || 'Noget gik galt.';
     }
     m.running = false; delete m.state;
-    if (m.stopped && m.content) m.content += '\n\n(Stopped.)';
+    if (m.stopped && m.content) m.content += '\n\n(Stoppet.)';
     live[c.id].running = false;
     c.updated = Date.now(); persist();
     if (cur === c) { updateBot(idx); setBusy(false); scrollEnd(); const t = $('#chatIn'); if (t && matchMedia('(hover:hover)').matches) t.focus({ preventScroll: true }) }
@@ -420,14 +420,14 @@ const Chat = (() => {
     else if (ev.type === 'stopped') m.stopped = true;
   }
   async function fallback(m, q) {
-    try { const d = await api('/api/retrieve?q=' + encodeURIComponent(q) + '&k=8'); m.fallback = d.results.map((r, i) => ({ ...r, key: '' })); if (!m.fallback.length) m.error += ' The library search also found nothing for this question.' }
+    try { const d = await api('/api/retrieve?q=' + encodeURIComponent(q) + '&k=8'); m.fallback = d.results.map((r, i) => ({ ...r, key: '' })); if (!m.fallback.length) m.error += ' Søgningen i biblioteket fandt heller ikke noget om spørgsmålet.' }
     catch { m.fallback = [] }
   }
   function stop() { if (cur && live[cur.id]) live[cur.id].abort() }
   function setBusy(on) {
     const b = $('#sendBtn'); if (!b) return;
     b.innerHTML = on ? '<span class="stopsq"></span>' : ico('up');
-    b.setAttribute('aria-label', on ? 'Stop the answer' : 'Send');
+    b.setAttribute('aria-label', on ? 'Stop svaret' : 'Send');
     b.classList.toggle('stop', on);
   }
   function scrollEnd(force) {
