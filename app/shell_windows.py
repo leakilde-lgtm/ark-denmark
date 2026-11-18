@@ -38,7 +38,7 @@ def system_dll(name):
         _dlls[name] = ctypes.WinDLL(name, winmode=_SYSTEM32_ONLY)
     return _dlls[name]
 
-TITLE = 'Lastbook'
+TITLE = 'ARK'
 WIDTH, HEIGHT = 1280, 860
 SURFACE = {True: (0xf3, 0xf3, 0xf3), False: (0x20, 0x20, 0x20)}   # the page's pane colour, light and dark: the caption takes it too, so they read as one surface
 MIN_SIZE = (640, 480)   # the page's area, in CSS pixels (see fit_min). Below 900 the page folds its pane to a rail; it never needs the phone layout here
@@ -67,8 +67,8 @@ TOO_BIG = 'A page was using too much memory, so it was closed.'
 BROWSER_ARGS = ('--disable-features=ElasticOverscroll,msOneAuthWAM,msForceOneAuthWAM --disable-background-networking --disable-component-update '
                 '--disable-domain-reliability --no-pings --host-resolver-rules="MAP * ^NOTFOUND" '    # ^NOTFOUND: Chromium's token since 120 (audit X1)
                 '--webrtc-ip-handling-policy=disable_non_proxied_udp --force-webrtc-ip-handling-policy=disable_non_proxied_udp')   # both layers' spelling
-NO_RUNTIME = ('Lastbook needs the Microsoft Edge WebView2 Runtime, and it was not found on this computer.\n\n'
-              'Windows 11 normally includes it. Install "WebView2 Runtime" from Microsoft, then start Lastbook again.')
+NO_RUNTIME = ('ARK needs the Microsoft Edge WebView2 Runtime, and it was not found on this computer.\n\n'
+              'Windows 11 normally includes it. Install "WebView2 Runtime" from Microsoft, then start ARK again.')
 BLOCKED_SCHEMES = ('http', 'https', 'ws', 'wss', 'ftp')
 # All a right-click offers. Anything else in the runtime's menu, now or after an update, goes: its Share panel posts to other programs and makes the runtime write a crash report.
 MENU_KEEP = {'cut', 'copy', 'paste', 'pasteAndMatchStyle', 'selectAll', 'undo', 'redo', 'copyImage'}
@@ -562,7 +562,7 @@ def preflight():
         n = net()
     except Exception:
         traceback.print_exc()
-        return f'Lastbook could not load the files it needs to show its window.\n\nThey should be in {_lib_dir()}.'
+        return f'ARK could not load the files it needs to show its window.\n\nThey should be in {_lib_dir()}.'
     try:
         version = n.Core.CoreWebView2Environment.GetAvailableBrowserVersionString()
     except Exception as e:
@@ -825,7 +825,7 @@ class Shell:
     def on_ready(self, sender, args):
         if not args.IsSuccess:
             print('WebView2 did not start:', args.InitializationException, flush=True)
-            message(NO_RUNTIME if 'NotFound' in str(type(args.InitializationException)) else f'Lastbook could not open its window.\n\n{args.InitializationException.Message}')
+            message(NO_RUNTIME if 'NotFound' in str(type(args.InitializationException)) else f'ARK could not open its window.\n\n{args.InitializationException.Message}')
             self.form.Close()
             return
         Core = self.n.Core
@@ -1113,7 +1113,7 @@ class Shell:
         print('web view process failed:', kind, args.Reason, flush=True)
         note(kind='process-failed', what=str(kind), reason=str(args.Reason))
         if kind == Kind.BrowserProcessExited:
-            message('The window part of Lastbook stopped working, so Lastbook will close. Your library is not affected.')
+            message('The window part of ARK stopped working, so ARK will close. Your library is not affected.')
             self.ui(self.form.Close)
         elif self.ended_why and kind in (Kind.RenderProcessExited, Kind.FrameRenderProcessExited):
             why, self.ended_why = self.ended_why, None

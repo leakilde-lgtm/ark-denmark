@@ -29,8 +29,8 @@ LOG_BACKUPS = 3
 
 DATA_NAME = 'LastbookData'
 CATALOG = os.path.join('library-data', 'catalog.json')
-ASK_TITLE = 'Find your Lastbook library'
-ASK = 'Lastbook needs its library folder, called LastbookData. Unzip the library you downloaded, then choose that folder.'
+ASK_TITLE = 'Find your ARK library'
+ASK = 'ARK needs its library folder, called LastbookData. Unzip the library you downloaded, then choose that folder.'
 
 
 def app_folders():
@@ -91,8 +91,8 @@ def check(folder):
             continue
         if writable(f):
             return f, None
-        return None, f'Lastbook cannot save in “{shown(f)}”. Move the LastbookData folder somewhere you can save to, then choose it there.'
-    return None, f'“{shown(folder)}” is not a Lastbook library. Choose the folder called LastbookData, inside the library you unzipped.'
+        return None, f'ARK cannot save in “{shown(f)}”. Move the LastbookData folder somewhere you can save to, then choose it there.'
+    return None, f'“{shown(folder)}” is not an ARK library. Choose the folder called LastbookData, inside the library you unzipped.'
 
 
 def data_folder(arg):
@@ -278,7 +278,7 @@ def run_setup():
         import shell_linux
         shell_linux.run(B.Bridge(setup_api.SetupServer, 'stream', B.ORIGIN_MAC), linux_dirs())
         return 0
-    show_error('The Lastbook desktop app runs on Windows and macOS. Everywhere else, use the server version: python server.py')
+    show_error('The ARK desktop app runs on Windows and macOS. Everywhere else, use the server version: python server.py')
     return 2
 
 
@@ -288,7 +288,7 @@ def show_error(message):
         shell_macos.show_error(message)
     elif sys.platform == 'win32':
         import ctypes
-        ctypes.windll.user32.MessageBoxW(None, message, 'Lastbook', 0x10)  # MB_ICONERROR
+        ctypes.windll.user32.MessageBoxW(None, message, 'ARK', 0x10)  # MB_ICONERROR
     elif sys.platform.startswith('linux'):
         try:
             import shell_linux
@@ -349,7 +349,7 @@ def open_log(data):
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Lastbook')
+    ap = argparse.ArgumentParser(description='ARK')
     ap.add_argument('--data', help='data folder holding library-data/ and derived/ (or set LASTBOOK_DATA)')
     ap.add_argument('--ask', action='store_true', help='ask for the library folder in a dialog instead of opening setup')
     a = ap.parse_args()
@@ -373,7 +373,7 @@ def main():
             return run_setup()
     data = data.resolve()
     if not (data / CATALOG).is_file():   # only a folder named by --data or LASTBOOK_DATA gets here unchecked
-        show_error(f'Lastbook could not find its library.\n\nIt looked in:\n{data}\n\nThat folder must hold {CATALOG}.')
+        show_error(f'ARK could not find its library.\n\nIt looked in:\n{data}\n\nThat folder must hold {CATALOG}.')
         return 2
     os.environ['LASTBOOK_DATA'] = str(data)   # before the engine is imported: it reads this once
     os.environ.setdefault('LASTBOOK_LOCAL_AI', '1')   # the optional local AI (llm_local.py), used when its model file is found
@@ -403,7 +403,7 @@ def main():
         import shell_linux
         shell_linux.run(B.Bridge(server, 'stream', B.ORIGIN_MAC), linux_dirs())
     else:
-        show_error('The Lastbook desktop app runs on Windows and macOS. Everywhere else, use the server version: python server.py')
+        show_error('The ARK desktop app runs on Windows and macOS. Everywhere else, use the server version: python server.py')
         return 2
     return 0
 
@@ -418,5 +418,5 @@ if __name__ == '__main__':
         raise
     except BaseException as e:
         traceback.print_exc()
-        show_error(f'Lastbook could not start: {type(e).__name__}: {e}')
+        show_error(f'ARK could not start: {type(e).__name__}: {e}')
         sys.exit(1)

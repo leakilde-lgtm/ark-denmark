@@ -20,7 +20,7 @@ objc.loadBundleFunctions(mac_ax._b, _f, [('AXUIElementSetAttributeValue', b'i^{_
 
 def panel(pid):
     for w in mac_ax.attr(mac_ax._f['AXUIElementCreateApplication'](pid), 'AXWindows') or []:
-        if str(mac_ax.attr(w, 'AXTitle') or '') != 'Lastbook':
+        if str(mac_ax.attr(w, 'AXTitle') or '') != 'ARK':
             return w
     return None
 

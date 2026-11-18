@@ -127,7 +127,7 @@ else:
             break
     result['windows'] = windows(pid)
     for w in result['windows']:
-        if w['name'] == 'Lastbook':
+        if w['name'] == 'ARK':
             shot = OUT / f'window-{w["id"]}.png'
             subprocess.run(['screencapture', '-x', '-o', '-l', str(w['id']), str(shot)], capture_output=True)
             result['shot'] = str(shot) if shot.exists() else 'screencapture made nothing'

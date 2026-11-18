@@ -57,7 +57,7 @@ STALL = 60                      # seconds without WebKit reading any of an answe
 MEMORY_LIMIT_MB = 4096          # the page's process; over it WebKit ends the page and the app starts again at home (as the Mac shell's MEMORY_LIMIT)
 NO_NETWORK = json.dumps([{'trigger': {'url-filter': '.*'}, 'action': {'type': 'block'}}]
                         + [{'trigger': {'url-filter': '^' + scheme + ':'}, 'action': {'type': 'ignore-previous-rules'}} for scheme in (SCHEME, 'data', 'blob', 'about')])
-NO_NETWORK_REFUSED = 'Lastbook could not switch off its network access, so it will not open anything.'
+NO_NETWORK_REFUSED = 'ARK could not switch off its network access, so it will not open anything.'
 FEATURES_OFF = ('PeerConnectionEnabled', 'NavigationAPIEnabled', 'LinkPreconnect', 'LinkPreconnectEarlyHintsEnabled', 'LinkDNSPrefetchEnabled',
                 'LinkPrefetchEnabled', 'SpeculationRulesPrefetchEnabled', 'WebSocketEnabled', 'WebTransportEnabled', 'BeaconAPIEnabled', 'PushAPIEnabled',
                 'PrivateClickMeasurementEnabled', 'SafeBrowsingEnabled')
@@ -75,7 +75,7 @@ def _gtk():
     global _gtk_ok
     if _gtk_ok is None:
         GLib.set_prgname('lastbook')
-        GLib.set_application_name('Lastbook')
+        GLib.set_application_name('ARK')
         try:
             r = Gtk.init_check(None)
             _gtk_ok = bool(r[0] if isinstance(r, tuple) else r)
@@ -95,7 +95,7 @@ def show_error(message):
     """Before there is a window, or instead of one."""
     if not _gtk():
         return
-    d = Gtk.MessageDialog(message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text='Lastbook')
+    d = Gtk.MessageDialog(message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text='ARK')
     d.format_secondary_text(message)
     _icon(d)
     d.run()
@@ -173,7 +173,7 @@ def claim(lock_dir):
         _lock_file = open(os.path.join(lock_dir, 'lastbook.lock'), 'w')
         fcntl.flock(_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except OSError:
-        show_error('Lastbook is already open.')
+        show_error('ARK is already open.')
         return False
     return True
 
@@ -383,7 +383,7 @@ class Shell:
         except Exception:
             pass
 
-        w = self.window = Gtk.ApplicationWindow(application=app, title='Lastbook')
+        w = self.window = Gtk.ApplicationWindow(application=app, title='ARK')
         w.set_default_size(*SIZE)
         w.set_size_request(*MIN_SIZE)
         _icon(w)
@@ -395,7 +395,7 @@ class Shell:
 
     # ---- header and keys: the Mac menu's items
     def header(self):
-        bar = Gtk.HeaderBar(title='Lastbook', show_close_button=True)
+        bar = Gtk.HeaderBar(title='ARK', show_close_button=True)
         menu = Gio.Menu()
         go = Gio.Menu()
         for i, (name, _) in enumerate(GO):
@@ -407,9 +407,9 @@ class Shell:
         view.append('Full Screen', 'win.fullscreen')
         menu.append_section(None, view)
         helps = Gio.Menu()
-        helps.append('Lastbook Help', 'win.help')
+        helps.append('ARK Help', 'win.help')
         helps.append('Check for Updates…', 'win.updates')
-        helps.append('Quit Lastbook', 'win.quit')
+        helps.append('Quit ARK', 'win.quit')
         menu.append_section(None, helps)
         btn = Gtk.MenuButton(menu_model=menu, image=Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.BUTTON))
         btn.set_tooltip_text('Menu')
@@ -692,7 +692,7 @@ def quit_app():
         local = getattr(assistant, 'LOCAL', None)
         if local is not None:
             try:
-                local.stop('Lastbook is closing')
+                local.stop('ARK is closing')
             except Exception:
                 traceback.print_exc()
     t = threading.Thread(target=stop_ai, daemon=True, name='stop-ai')
@@ -706,7 +706,7 @@ def run(bridge, app_dirs):
     """Show the window and stay here until it closes."""
     global SHELL, APP
     if not _gtk():
-        raise RuntimeError('Lastbook needs a desktop to open its window (no display was found).')
+        raise RuntimeError('ARK needs a desktop to open its window (no display was found).')
     if APP is None:
         APP = Gtk.Application(application_id=APP_ID, flags=Gio.ApplicationFlags.NON_UNIQUE)
     SHELL = Shell(bridge, app_dirs)

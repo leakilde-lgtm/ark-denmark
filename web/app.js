@@ -215,11 +215,11 @@ document.addEventListener('click', e => {
 });
 function errorBox(e, what) {
   return `<div class="err" role="alert"><b>${esc(what || 'Something went wrong.')}</b><br>${esc(e.message || e)}
-  <br><span class="small">If this keeps happening, close Lastbook and open it again.</span></div>`;
+  <br><span class="small">If this keeps happening, close ARK and open it again.</span></div>`;
 }
 // The window title, and on reading pages the toolbar's title and the line under it.
 // bar: what the toolbar shows when it is not the page's own title (an article names itself; the toolbar names the encyclopedia).
-const setTitle = (t, sub, bar) => { document.title = t ? t + ' · Lastbook' : 'Lastbook'; const b = $('#tbTitle'); b.textContent = b.title = bar ?? t ?? ''; if (sub !== undefined) $('#tbSub').textContent = $('#tbSub').title = sub };
+const setTitle = (t, sub, bar) => { document.title = t ? t + ' · ARK' : 'ARK — Viden der overlever'; const b = $('#tbTitle'); b.textContent = b.title = bar ?? t ?? ''; if (sub !== undefined) $('#tbSub').textContent = $('#tbSub').title = sub };
 
 /* ------------------------------------------------------------- router -- */
 // Where this tab is in its history. Each entry carries its own index in history.state, so Back and Forward are known exactly:
@@ -427,6 +427,7 @@ async function home() {
   const pins = (await libInfo()).pins !== false;
   main.innerHTML = `
   <section class="hero">
+    <p class="small muted">ARK · Viden der overlever</p>
     <h1>What do you need?</h1>
     <p class="lead">Pick what’s happening, search in your own words, or ask the library a question.</p>
     ${searchBox('bigQ', '', innerWidth < 500 ? 'e.g. boil water' : 'e.g. boil water, deep cut, no power')}
@@ -629,7 +630,7 @@ async function watch(id, t, from) {
     // Say why when the reason is the format: some library videos are AV1, which a computer without an AV1 decoder (a Mac before the M3) can't play.
     const f = (await videoFormats(fileUrl(d.path)).catch(() => [])).map(x => UNPLAYABLE[x]).find(x => x && !vid.canPlayType(x[1]));
     if (!vid.isConnected) return;   // the person has gone to another page
-    say(f ? `This video is saved in the ${f[0]} format, which this computer can’t play in Lastbook. Try another video player that supports ${f[0]}, such as VLC: the file is in your Lastbook data folder, at <b style="overflow-wrap:anywhere">library-data/${esc(d.path)}</b>.`
+    say(f ? `This video is saved in the ${f[0]} format, which this computer can’t play in ARK. Try another video player that supports ${f[0]}, such as VLC: the file is in your LastbookData folder, at <b style="overflow-wrap:anywhere">library-data/${esc(d.path)}</b>.`
       : `This video file couldn’t be played here. <a href="${fileUrl(d.path)}" target="_blank" rel="noopener">Open the file directly</a>.`);
   }, { once: true });
   if (resumeAt) {
@@ -1112,7 +1113,7 @@ async function localAI(action) {
   setTimeout(() => { if (location.hash.startsWith('#/about')) route() }, 400);
 }
 async function about() {
-  setTitle('About this library');
+  setTitle('About ARK');
   let dl = {}, st = {};
   LIB = null;   // About shows the counts as they are now
   const s = await libInfo();
@@ -1120,8 +1121,8 @@ async function about() {
   try { dl = await api('/api/download-status') } catch { }
   try { st = await fetch('/api/assistant/status').then(r => r.json()) } catch { }   // not api(): this answer names an error when no model is running, and still holds what is wanted
   const ch = dl.channels && dl.channels.counts, ix = st.index || {};
-  main.innerHTML = `<h1>About this library</h1>
-  <p class="lead">Public manuals, health guides, courses, videos and encyclopedias kept on this computer, so it works when the internet and phones don’t.</p>
+  main.innerHTML = `<h1>About ARK</h1>
+  <p class="lead">Viden der overlever. Public manuals, health guides, courses, videos and encyclopedias kept on this computer, so it works when the internet and phones don’t.</p>
   <div class="cards2" style="margin-top:16px">
    <div class="card"><b>What’s in it</b><small>${(s.pdfs || 0).toLocaleString()} PDF manuals (${(s.pdf_pages || 0).toLocaleString()} pages), ${(s.web_pages || 0).toLocaleString()} saved web pages, ${(s.videos || 0).toLocaleString()} downloaded videos and ${s.collections || 0} complete encyclopedias.</small></div>
    ${ch ? `<div class="card"><b>Still arriving</b><small>${ch.pending.toLocaleString()} more videos are queued and ${ch.downloading} downloading. Queued videos are not in the library yet — they appear only once downloaded.</small></div>` : ''}

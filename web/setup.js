@@ -58,9 +58,9 @@
   /* ------------------------------------------------------------ the engine */
   async function call(path, body) {
     const opts = body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-    let r; try { r = await fetch('/api/setup/' + path, opts) } catch { throw Object.assign(new Error('Lastbook did not answer. Close it and open it again.'), { status: 0 }) }
+    let r; try { r = await fetch('/api/setup/' + path, opts) } catch { throw Object.assign(new Error('ARK did not answer. Close it and open it again.'), { status: 0 }) }
     let d = null; try { d = await r.json() } catch { }
-    if (!r.ok && !(d && (d.error || d.need_bytes))) throw Object.assign(new Error(r.status === 404 ? 'Not available.' : 'Lastbook sent an unreadable reply.'), { status: r.status });
+    if (!r.ok && !(d && (d.error || d.need_bytes))) throw Object.assign(new Error(r.status === 404 ? 'Not available.' : 'ARK sent an unreadable reply.'), { status: r.status });
     return d;
   }
   const errCode = e => e && (typeof e === 'object' ? e.code : null);
@@ -222,12 +222,12 @@
             <small>${esc((S.hardware.ai && S.hardware.ai.why) || 'This computer does not have enough memory for it.')}</small></span></div>`;
     }
     const found = (S.found || []).map((f, i) => f.rejected ? `<div class="s-found off">${ico('file')}<span><b>${esc(f.name || f.path.split(/[\\/]/).pop())}</b><small>${esc(home(f.path))} · doesn’t match the published file, so it is not used</small></span></div>`
-      : f.size_ok === false ? '' : `<div class="s-found">${ico(f.kind === 'library' ? 'folder' : 'file')}<span><b>${esc(f.kind === 'library' ? 'A Lastbook library' : f.kind === 'model' ? 'The local AI file' : (packById(f.id) ? packById(f.id).title + ' library' : f.title || f.name))}</b><small>${esc(home(f.path))}${f.size ? ' · ' + size(f.size) : ''}</small></span>
+      : f.size_ok === false ? '' : `<div class="s-found">${ico(f.kind === 'library' ? 'folder' : 'file')}<span><b>${esc(f.kind === 'library' ? 'An ARK library' : f.kind === 'model' ? 'The local AI file' : (packById(f.id) ? packById(f.id).title + ' library' : f.title || f.name))}</b><small>${esc(home(f.path))}${f.size ? ' · ' + size(f.size) : ''}</small></span>
         <button class="btn plain" data-use="${i}">Use the file you already have</button></div>`).join('');
 
     main.innerHTML = `${c ? `<button class="s-link" id="toManage">${ico('back')}<span>Library and local AI</span></button>` : ''}
-      <h1>${c ? 'Change the library' : 'Set up Lastbook'}</h1>
-      ${c ? '' : '<p class="lead">Choose your state and library. Lastbook downloads them for offline use.</p>'}
+      <h1>${c ? 'Change the library' : 'Set up ARK'}</h1>
+      ${c ? '' : '<p class="lead">Viden der overlever. Choose your state and library. ARK downloads them for offline use.</p>'}
       ${computer()}
       ${c ? '' : recommendLine()}
       ${found ? `<h2>Found on this computer</h2><div class="s-founds">${found}</div>` : ''}
@@ -386,7 +386,7 @@
     };
   }
   async function act(path, done, body) {
-    const r = await call(path, body || {}).catch(e => ({ error: e.status === 404 ? 'This Lastbook cannot do that yet.' : e.message }));
+    const r = await call(path, body || {}).catch(e => ({ error: e.status === 404 ? 'This ARK cannot do that yet.' : e.message }));
     confirmRemove = confirmOld = false;
     noteOk = !(r && r.error);
     if (r && r.error) note = r.error;
@@ -417,7 +417,7 @@
       network: ['The internet connection dropped.', 'What is downloaded is kept. Retry when you are online again.', 'retry'],
       checksum: ['The download came out damaged twice, so it was not used.', 'Retry to download it once more.', 'retry'],
       unpack: ['Unpacking did not finish.', 'Check there is room on the disk, then retry.', 'retry'],
-      activate: ['The new library is ready but could not be switched in.', 'Retry, or close Lastbook and open it again.', 'retry'],
+      activate: ['The new library is ready but could not be switched in.', 'Retry, or close ARK and open it again.', 'retry'],
       cancelled: ['The download was cancelled.', 'Start again when you are ready.', 'back'],
     }[code] || [esc(errText(e) || 'Something went wrong.'), 'Retry, or go back and choose again.', 'retry'];
     return `<div class="s-err" role="alert">${ico('warn')}<div><b>${T[0]}</b><p>${T[1]}${code === 'found_mismatch' && !c ? '' : ' ' + safe}</p>
@@ -471,9 +471,9 @@
       const first = !shapeKey;
       shapeKey = key;
       const quiet = j.state === 'paused' && j.items.filter(i => i.state === 'paused').every(noDownload);
-      const lead = quiet ? 'Stopped when Lastbook closed. Resume to finish; nothing needs downloading.'
-        : j.state === 'paused' ? 'What is downloaded is kept. Resume when you are ready, even after closing Lastbook.'
-        : j.state === 'failed' ? '' : 'You can keep using this computer. Closing Lastbook pauses it.';
+      const lead = quiet ? 'Stopped when ARK closed. Resume to finish; nothing needs downloading.'
+        : j.state === 'paused' ? 'What is downloaded is kept. Resume when you are ready, even after closing ARK.'
+        : j.state === 'failed' ? '' : 'You can keep using this computer. Closing ARK pauses it.';
       main.innerHTML = `<h1>${head}</h1>${lead ? `<p class="lead">${lead}</p>` : ''}
         ${j.state === 'failed' ? errorBox(j) : ''}
         <div class="s-items">${j.items.map(it => itemHTML(it, j)).join('')}</div>

@@ -49,7 +49,7 @@ MENU_KEEP_ACTIONS = {'copy:', 'cut:', 'paste:', 'selectAll:', 'undo:', 'redo:'}
 # The same rule as Windows' host-resolver setting: refuse by default, whatever the scheme, frame or kind of load. Compiled before the first page; with no list there is no page.
 NO_NETWORK = json.dumps([{'trigger': {'url-filter': '.*'}, 'action': {'type': 'block'}}]
                         + [{'trigger': {'url-filter': '^' + scheme + ':'}, 'action': {'type': 'ignore-previous-rules'}} for scheme in (SCHEME, 'data', 'blob', 'about')])
-NO_NETWORK_REFUSED = 'Lastbook could not switch off its network access, so it will not open anything.'
+NO_NETWORK_REFUSED = 'ARK could not switch off its network access, so it will not open anything.'
 
 # Off where this WebKit lets us. These are WebKit's own private switches, looked up by name.
 FEATURES_OFF = ('PeerConnectionEnabled',   # UDP sockets, which nothing else here can see or refuse
@@ -85,7 +85,7 @@ def show_error(message):
     app.setActivationPolicy_(AppKit.NSApplicationActivationPolicyRegular)
     app.activateIgnoringOtherApps_(True)
     alert = AppKit.NSAlert.alloc().init()
-    alert.setMessageText_('Lastbook')
+    alert.setMessageText_('ARK')
     alert.setInformativeText_(message)
     alert.setAlertStyle_(AppKit.NSAlertStyleCritical)
     alert.runModal()
@@ -464,7 +464,7 @@ class Shell:
     # ---- the window
     def make_window(self):
         w = AppKit.NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(Foundation.NSMakeRect(0, 0, *SIZE), STYLE, AppKit.NSBackingStoreBuffered, False)
-        w.setTitle_('Lastbook')    # hidden in the bar, still named in the Window menu and Mission Control
+        w.setTitle_('ARK')    # hidden in the bar, still named in the Window menu and Mission Control
         w.setTitlebarAppearsTransparent_(True)
         w.setTitleVisibility_(AppKit.NSWindowTitleHidden)
         bar = AppKit.NSToolbar.alloc().initWithIdentifier_('lastbook')   # empty: it only makes the band 52 points tall, with the traffic lights centred in it
@@ -758,10 +758,10 @@ def install_menu(app, go=None):
     view = _menu('View', [('Hide Sidebar', 'toggleSidebar:', 's', CTRL_CMD), (None, None, None), ('Enter Full Screen', 'toggleFullScreen:', 'f', CTRL_CMD)], go)
     window = _menu('Window', [('Minimize', 'performMiniaturize:', 'm'), ('Zoom', 'performZoom:', ''), (None, None, None), ('Close', 'performClose:', 'w'),
                               (None, None, None), ('Bring All to Front', 'arrangeInFront:', '')])
-    helps = _menu('Help', [('Lastbook Help', 'help:', '?')], go)
-    for holder in (_menu('Lastbook', [('About Lastbook', 'orderFrontStandardAboutPanel:', ''), ('Check for Updates\u2026', 'checkUpdates:', ''), (None, None, None),
-                                      ('Hide Lastbook', 'hide:', 'h'), ('Hide Others', 'hideOtherApplications:', 'h', OPT_CMD), ('Show All', 'unhideAllApplications:', ''),
-                                      (None, None, None), ('Quit Lastbook', 'terminate:', 'q')], go),
+    helps = _menu('Help', [('ARK Help', 'help:', '?')], go)
+    for holder in (_menu('ARK', [('About ARK', 'orderFrontStandardAboutPanel:', ''), ('Check for Updates\u2026', 'checkUpdates:', ''), (None, None, None),
+                                      ('Hide ARK', 'hide:', 'h'), ('Hide Others', 'hideOtherApplications:', 'h', OPT_CMD), ('Show All', 'unhideAllApplications:', ''),
+                                      (None, None, None), ('Quit ARK', 'terminate:', 'q')], go),
                    edit,
                    view,
                    _menu('Go', [('Back', 'goBack:', '['), ('Forward', 'goForward:', ']'), (None, None, None)] + [(name, 'go:', str(i + 1)) for i, (name, _) in enumerate(GO)], go),

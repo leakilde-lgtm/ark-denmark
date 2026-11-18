@@ -15,7 +15,7 @@
     const ver = s.current ? `Version ${E(s.current)}.` : 'This copy has no version number (it was not built as an app).';
     switch (s.state) {
       case 'checking': return `${ver} Checking for updates…`;
-      case 'up_to_date': return `${ver} Lastbook is up to date. ${btn('Check again')}`;
+      case 'up_to_date': return `${ver} ARK is up to date. ${btn('Check again')}`;
       case 'available': return `${ver} Version ${E(s.version)} is available. Download it from ${E(s.website)}. Your library, local AI and chats stay. ${btn('Check again')}`;
       case 'not_published': return `${ver} No update information yet. ${btn('Try again')}`;
       case 'too_old_os': case 'error': return `${ver} ${E(s.message)} ${btn('Try again')}`;
@@ -31,7 +31,7 @@
 
   async function refresh(el) {
     if (!el.isConnected) return;
-    try { paint(el, await call('state')) } catch { el.textContent = 'Lastbook could not ask about updates.' }
+    try { paint(el, await call('state')) } catch { el.textContent = 'ARK could not ask about updates.' }
   }
 
   async function check(el) {
@@ -39,11 +39,11 @@
       const s = await call('check');
       if (s.error && !s.state) { el.textContent = s.error; return }
       paint(el, s);
-    } catch { el.textContent = 'Lastbook could not ask about updates.' }
+    } catch { el.textContent = 'ARK could not ask about updates.' }
   }
 
   window.LBUpdate = {
-    card: () => '<div class="card"><b>Lastbook app</b><small id="updBox">…</small></div>',
+    card: () => '<div class="card"><b>ARK</b><small id="updBox">…</small></div>',
     mount(root) {
       const el = root.querySelector('#updBox'); if (!el) return;
       el.addEventListener('click', e => { if (e.target.closest('[data-upd]')) check(el) });

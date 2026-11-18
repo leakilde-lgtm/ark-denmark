@@ -105,7 +105,7 @@ class Lookup(unittest.TestCase):
         self.assertEqual(main.check(data.parent), (data, None))
         found, why = main.check(self.tmp)
         self.assertIsNone(found)
-        self.assertIn('is not a Lastbook library', why)
+        self.assertIn('is not an ARK library', why)
         self.assertNotIn(str(self.tmp.parent), why)   # the folder's name, not its whole path
 
     def test_remembered_gone_searches_again(self):
@@ -132,7 +132,7 @@ class Lookup(unittest.TestCase):
         with mock.patch.object(main, 'choose_folder', lambda m: asked.append(m) or next(answers)):
             self.assertEqual(main.ask_for_library(), good)
         self.assertEqual(asked[0], main.ASK)
-        self.assertIn('is not a Lastbook library', asked[1])
+        self.assertIn('is not an ARK library', asked[1])
         self.assertEqual(main.data_folder(None), good)   # remembered
 
     def test_cancel_drops_old_reason(self):
@@ -142,7 +142,7 @@ class Lookup(unittest.TestCase):
         answers = iter([str(self.tmp / 'empty'), '', str(good)])   # wrong folder, then the picker is cancelled
         with mock.patch.object(main, 'choose_folder', lambda m: asked.append(m) or next(answers)):
             self.assertEqual(main.ask_for_library(), good)
-        self.assertIn('is not a Lastbook library', asked[1])
+        self.assertIn('is not an ARK library', asked[1])
         self.assertEqual(asked[2], main.ASK)
 
     def test_quit(self):

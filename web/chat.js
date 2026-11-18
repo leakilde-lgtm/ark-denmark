@@ -46,7 +46,7 @@ const Chat = (() => {
     if (id && !cur) { swap('#/ask'); return }
     const about = q.get('about');
     aboutCtx = !cur && about ? await describe(about) : (cur && cur.about ? cur.aboutInfo : null);
-    document.title = (cur ? cur.title : 'Chat') + ' · Lastbook';
+    document.title = (cur ? cur.title : 'Chat') + ' · ARK';
     $('#tbTitle').textContent = cur ? cur.title : 'Chat';
     main.innerHTML = `<div class="chat">
       <aside class="chat-side" id="chatSide" aria-label="Conversations">
@@ -337,7 +337,7 @@ const Chat = (() => {
     return t;
   }
   function exportChat(c) {
-    let md = `# ${c.title}\n\nExported from Lastbook (offline library) on ${new Date().toLocaleString()}.\nAnswers were written by a local AI model from the library's documents. Check the linked pages; get trained help for anything serious.\n`;
+    let md = `# ${c.title}\n\nExported from ARK (offline library) on ${new Date().toLocaleString()}.\nAnswers were written by a local AI model from the library's documents. Check the linked pages; get trained help for anything serious.\n`;
     for (const m of c.messages) md += m.role === 'user' ? `\n## Question\n\n${m.content}\n` : `\n## Answer\n\n${m.content ? plain(m) : '(no answer: ' + (m.error || 'stopped') + ')'}\n`;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));

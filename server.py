@@ -1840,7 +1840,7 @@ class Handler(library.Handler):
         return bool(m and secrets.compare_digest(m.group(1), LAN_KEY))
 
     def deny(self):
-        body = b'<!doctype html><meta name=viewport content="width=device-width"><title>Lastbook</title><p style="font:18px system-ui;padding:24px">This guide is shared on this network only with an access link. Ask the person running it for the link shown when it started.</p>'
+        body = '<!doctype html><meta name=viewport content="width=device-width"><title>ARK — Viden der overlever</title><p style="font:18px system-ui;padding:24px">This guide is shared on this network only with an access link. Ask the person running it for the link shown when it started.</p>'.encode()
         self.send_response(403)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
         self.send_header('Content-Length', str(len(body)))

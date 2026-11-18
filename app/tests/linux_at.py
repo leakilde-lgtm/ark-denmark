@@ -154,7 +154,7 @@ def put_text(n, value, enter=True):
         ed.insertText(0, value, len(value))
     except NotImplementedError:   # WebKitGTK's own AT-SPI has no EditableText: focus it, then type on the X keyboard
         import subprocess
-        subprocess.run(['xdotool', 'search', '--onlyvisible', '--name', 'Lastbook', 'windowfocus', '--sync'], capture_output=True)
+        subprocess.run(['xdotool', 'search', '--onlyvisible', '--name', 'ARK', 'windowfocus', '--sync'], capture_output=True)
         acc.queryComponent().grabFocus()
         time.sleep(0.3)
         subprocess.run(['xdotool', 'key', 'ctrl+a', 'BackSpace'])
